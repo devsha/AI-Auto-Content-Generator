@@ -480,8 +480,48 @@ class AIACG_Admin_Settings {
             return;
         }
 
+        // 验证文件类型
+        $file_type = $_FILES['settings_file']['type'];
+        $file_name = $_FILES['settings_file']['name'];
+        $file_size = $_FILES['settings_file']['size'];
+
+        // 只允许.json文件
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+        if ($file_ext !== 'json') {
+            add_settings_error(
+                'aiacg_settings',
+                'import_error',
+                __('Only JSON files are allowed', 'ai-auto-content-generator'),
+                'error'
+            );
+            return;
+        }
+
+        // 限制文件大小为1MB
+        if ($file_size > 1048576) {
+            add_settings_error(
+                'aiacg_settings',
+                'import_error',
+                __('File size must be less than 1MB', 'ai-auto-content-generator'),
+                'error'
+            );
+            return;
+        }
+
         $file = $_FILES['settings_file']['tmp_name'];
         $json = file_get_contents($file);
+
+        // 验证JSON内容大小
+        if (strlen($json) > 1048576) {
+            add_settings_error(
+                'aiacg_settings',
+                'import_error',
+                __('File content is too large', 'ai-auto-content-generator'),
+                'error'
+            );
+            return;
+        }
+
         $settings = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -494,9 +534,44 @@ class AIACG_Admin_Settings {
             return;
         }
 
-        // 导入设置
+        // 验证是否是数组
+        if (!is_array($settings)) {
+            add_settings_error(
+                'aiacg_settings',
+                'import_error',
+                __('Invalid settings format', 'ai-auto-content-generator'),
+                'error'
+            );
+            return;
+        }
+
+        // 只允许导入以aiacg_开头的设置，防止覆盖其他WordPress选项
+        $allowed_prefix = 'aiacg_';
+        $imported_count = 0;
+
         foreach ($settings as $key => $value) {
+            // 验证键名
+            if (strpos($key, $allowed_prefix) !== 0) {
+                continue; // 跳过非插件设置
+            }
+
+            // 消毒value（如果是字符串）
+            if (is_string($value)) {
+                $value = sanitize_text_field($value);
+            }
+
             update_option($key, $value);
+            $imported_count++;
+        }
+
+        if ($imported_count === 0) {
+            add_settings_error(
+                'aiacg_settings',
+                'import_error',
+                __('No valid settings found in file', 'ai-auto-content-generator'),
+                'error'
+            );
+            return;
         }
 
         add_settings_error(

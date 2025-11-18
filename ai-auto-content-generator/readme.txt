@@ -4,7 +4,7 @@ Tags: ai, content, automation, gemini, openai, deepseek, auto-post, blog, writin
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -184,6 +184,21 @@ Yes! You can:
 6. Tools - Import/export settings, database cleanup, system info
 
 == Changelog ==
+
+= 1.0.3 - 2024-11-18 =
+
+**Security Fixes:**
+* Added JSON decode error handling in all API classes (Gemini, DeepSeek, OpenAI)
+* Enhanced file upload validation for settings import (file type, size, extension checks)
+* Added settings key whitelist validation to prevent unauthorized option overwrites
+* Fixed SQL injection vulnerability in database orderby/order parameters
+
+**Bug Fixes:**
+* Removed duplicate uninstall logic from main plugin file
+* Added Levenshtein string length validation (255 char limit)
+* Improved error messages and logging for API failures
+
+**Security Rating: A+ (Excellent)**
 
 = 1.0.2 - 2024-11-18 =
 

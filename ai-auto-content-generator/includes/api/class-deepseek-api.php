@@ -138,6 +138,19 @@ class AIACG_DeepSeek_API implements AIACG_AI_API_Interface {
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
 
+        // 检查JSON解码是否成功
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $error_message = 'Invalid JSON response from API: ' . json_last_error_msg();
+            AIACG_Database::log('DeepSeek API error: ' . $error_message, 'error', array('raw_response' => substr($body, 0, 500)));
+            return array(
+                'success' => false,
+                'content' => '',
+                'tokens' => 0,
+                'error' => $error_message,
+                'cost' => 0,
+            );
+        }
+
         if ($response_code !== 200 || isset($data['error'])) {
             $error_message = isset($data['error']['message']) ? $data['error']['message'] : 'Unknown error';
             AIACG_Database::log('DeepSeek API error: ' . $error_message, 'error', $data);

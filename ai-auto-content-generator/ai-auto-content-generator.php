@@ -3,7 +3,7 @@
  * Plugin Name: AI Auto Content Generator
  * Plugin URI: https://github.com/yourusername/ai-auto-content-generator
  * Description: 基于AI API自动生成和发布文章的WordPress插件，支持Gemini、DeepSeek、OpenAI等多种AI服务
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Your Name
  * Author URI: https://yourwebsite.com
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // 定义插件常量
-define('AIACG_VERSION', '1.0.2');
+define('AIACG_VERSION', '1.0.3');
 define('AIACG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIACG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIACG_PLUGIN_BASENAME', plugin_basename(__FILE__));

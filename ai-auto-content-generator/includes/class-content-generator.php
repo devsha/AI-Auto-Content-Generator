@@ -122,6 +122,44 @@ class AIACG_Content_Generator {
             return $content_result;
         }
 
+        // 验证内容不为空
+        $content = trim($content_result['content']);
+        if (empty($content)) {
+            $error_msg = __('Generated content is empty', 'ai-auto-content-generator');
+            AIACG_Database::update_history($history_id, array(
+                'status' => 'failed',
+                'error_message' => $error_msg,
+                'generated_title' => $title,
+                'writing_angle' => $angle,
+            ));
+            return array(
+                'success' => false,
+                'post_id' => 0,
+                'error' => $error_msg,
+                'details' => array(),
+            );
+        }
+
+        // 验证内容长度合理（至少100字符）
+        if (strlen($content) < 100) {
+            $error_msg = __('Generated content is too short', 'ai-auto-content-generator');
+            AIACG_Database::update_history($history_id, array(
+                'status' => 'failed',
+                'error_message' => $error_msg,
+                'generated_title' => $title,
+                'writing_angle' => $angle,
+            ));
+            return array(
+                'success' => false,
+                'post_id' => 0,
+                'error' => $error_msg,
+                'details' => array(),
+            );
+        }
+
+        // 更新content_result的内容为清理后的内容
+        $content_result['content'] = $content;
+
         // 3. 生成摘要
         $excerpt = $this->generate_excerpt($content_result['content'], $args);
 
