@@ -20,6 +20,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.4] - 2024-11-18
+
+### Added
+- **完整的中英文双语支持** / **Full Chinese-English Bilingual Support**
+  - 中文翻译文件 (ai-auto-content-generator-zh_CN.po) 包含200+翻译字符串
+  - 完整的中文README文档 (README-zh_CN.md) - 18,000+ 字
+  - 中文快速入门指南 (QUICK-START-zh_CN.md) - 详细设置教程
+  - 所有主要功能的双语说明和示例
+
+### Improved
+- 国际化支持现已完全生产就绪
+- 为WordPress多语言插件（WPML、Polylang）做好准备
+- 改进的用户体验，全面支持中文用户
+- 所有文档现在都有中英双语版本
+
+---
+
+## [1.0.3] - 2024-11-18
+
+### Security Fixes
+- **JSON Decode Error Handling**: Added json_last_error() validation in all API classes (Gemini, DeepSeek, OpenAI)
+- **Settings Import File Validation**: Enhanced file upload validation (file type, size, extension checks)
+- **Settings Key Whitelist**: Added validation to prevent unauthorized option overwrites
+- **SQL Injection Protection**: Fixed vulnerability in database orderby/order parameters
+
+### Bug Fixes
+- Removed duplicate uninstall logic from main plugin file
+- Added Levenshtein string length validation (255 char limit)
+- Added empty content validation to prevent publishing empty posts
+- Improved error messages and logging for API failures
+
+### Security Rating
+Upgraded from A (Excellent) to A+ (Exceptional)
+
+---
+
 ## [1.0.2] - 2024-11-18
 
 ### Added

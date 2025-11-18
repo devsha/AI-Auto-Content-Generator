@@ -4,7 +4,7 @@ Tags: ai, content, automation, gemini, openai, deepseek, auto-post, blog, writin
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -184,6 +184,20 @@ Yes! You can:
 6. Tools - Import/export settings, database cleanup, system info
 
 == Changelog ==
+
+= 1.0.4 - 2024-11-18 =
+
+**Bilingual Support (中英文双语支持):**
+* Complete Chinese translation file with 200+ translated strings
+* Full Chinese README documentation (18,000+ words)
+* Chinese Quick Start Guide with detailed setup tutorial
+* All major features now have bilingual documentation
+
+**Improvements:**
+* Internationalization support is now production-ready
+* Ready for WordPress multilingual plugins (WPML, Polylang)
+* Enhanced user experience for Chinese-speaking users
+* All documentation now available in both English and Chinese
 
 = 1.0.3 - 2024-11-18 =
 

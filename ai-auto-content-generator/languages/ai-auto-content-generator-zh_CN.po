@@ -1,0 +1,731 @@
+# Copyright (C) 2024 AI Auto Content Generator
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: AI Auto Content Generator 1.0.4\n"
+"Report-Msgid-Bugs-To: https://github.com/yourusername/ai-auto-content-generator/issues\n"
+"POT-Creation-Date: 2024-11-18 12:00:00+00:00\n"
+"PO-Revision-Date: 2024-11-18 14:00:00+00:00\n"
+"Last-Translator: AI Team <support@example.com>\n"
+"Language-Team: Chinese (China)\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Manual\n"
+
+#: ai-auto-content-generator.php:50
+msgid "AI Auto Content Generator"
+msgstr "AI 自动内容生成器"
+
+#: ai-auto-content-generator.php:51
+msgid "Automatically generate high-quality articles using AI (Gemini, DeepSeek, OpenAI)"
+msgstr "使用AI自动生成高质量文章（支持Gemini、DeepSeek、OpenAI）"
+
+#: admin/class-admin-settings.php:35
+msgid "AI Content"
+msgstr "AI 内容"
+
+#: admin/class-admin-settings.php:36
+msgid "AI Content Generator"
+msgstr "AI 内容生成器"
+
+#: admin/class-admin-settings.php:48
+msgid "Settings"
+msgstr "设置"
+
+#: admin/class-admin-settings.php:115
+msgid "Main Topic"
+msgstr "主要主题"
+
+#: admin/class-admin-settings.php:120
+msgid "Topic Description"
+msgstr "主题描述"
+
+#: admin/class-admin-settings.php:125
+msgid "Sub Topics"
+msgstr "子主题"
+
+#: admin/class-admin-settings.php:130
+msgid "Writing Style"
+msgstr "写作风格"
+
+#: admin/class-admin-settings.php:135
+msgid "Target Audience"
+msgstr "目标读者"
+
+#: admin/class-admin-settings.php:140
+msgid "Daily Post Count"
+msgstr "每日文章数"
+
+#: admin/class-admin-settings.php:145
+msgid "Word Count"
+msgstr "字数"
+
+#: admin/class-admin-settings.php:150
+msgid "Generation Time"
+msgstr "生成时间"
+
+#: admin/class-admin-settings.php:155
+msgid "Publish Mode"
+msgstr "发布模式"
+
+#: admin/class-admin-settings.php:160
+msgid "Default Category"
+msgstr "默认分类"
+
+#: admin/class-admin-settings.php:165
+msgid "Auto Generate Tags"
+msgstr "自动生成标签"
+
+#: admin/class-admin-settings.php:170
+msgid "SEO Optimization"
+msgstr "SEO 优化"
+
+#: admin/class-admin-settings.php:200
+msgid "Active API"
+msgstr "当前API"
+
+#: admin/class-admin-settings.php:205
+msgid "Enable API Rotation"
+msgstr "启用API轮换"
+
+#: admin/class-admin-settings.php:210
+msgid "API Priority"
+msgstr "API优先级"
+
+#: admin/class-admin-settings.php:215
+msgid "Auto Switch on Failure"
+msgstr "失败时自动切换"
+
+#: admin/class-admin-settings.php:220
+msgid "Gemini API Key"
+msgstr "Gemini API密钥"
+
+#: admin/class-admin-settings.php:225
+msgid "Gemini Model"
+msgstr "Gemini模型"
+
+#: admin/class-admin-settings.php:230
+msgid "Gemini Temperature"
+msgstr "Gemini温度"
+
+#: admin/class-admin-settings.php:235
+msgid "Gemini Max Tokens"
+msgstr "Gemini最大令牌数"
+
+#: admin/class-admin-settings.php:240
+msgid "DeepSeek API Key"
+msgstr "DeepSeek API密钥"
+
+#: admin/class-admin-settings.php:245
+msgid "DeepSeek Model"
+msgstr "DeepSeek模型"
+
+#: admin/class-admin-settings.php:250
+msgid "DeepSeek Temperature"
+msgstr "DeepSeek温度"
+
+#: admin/class-admin-settings.php:255
+msgid "DeepSeek Max Tokens"
+msgstr "DeepSeek最大令牌数"
+
+#: admin/class-admin-settings.php:260
+msgid "OpenAI API Key"
+msgstr "OpenAI API密钥"
+
+#: admin/class-admin-settings.php:265
+msgid "OpenAI Model"
+msgstr "OpenAI模型"
+
+#: admin/class-admin-settings.php:270
+msgid "OpenAI Temperature"
+msgstr "OpenAI温度"
+
+#: admin/class-admin-settings.php:275
+msgid "OpenAI Max Tokens"
+msgstr "OpenAI最大令牌数"
+
+#: admin/class-admin-settings.php:300
+#: admin/views/tab-templates.php:15
+msgid "System Prompt"
+msgstr "系统提示词"
+
+#: admin/class-admin-settings.php:305
+#: admin/views/tab-templates.php:30
+msgid "User Prompt Template"
+msgstr "用户提示词模板"
+
+#: admin/class-admin-settings.php:310
+#: admin/views/tab-templates.php:45
+msgid "Writing Angles"
+msgstr "写作角度"
+
+#: admin/class-admin-settings.php:315
+msgid "Title Min Length"
+msgstr "标题最小长度"
+
+#: admin/class-admin-settings.php:320
+msgid "Title Max Length"
+msgstr "标题最大长度"
+
+#: admin/class-admin-settings.php:350
+msgid "Enable Logging"
+msgstr "启用日志"
+
+#: admin/class-admin-settings.php:355
+msgid "Log Retention Days"
+msgstr "日志保留天数"
+
+#: admin/class-admin-settings.php:360
+msgid "History Retention Days"
+msgstr "历史记录保留天数"
+
+#: admin/class-admin-settings.php:450
+msgid "Permission denied"
+msgstr "权限不足"
+
+#: admin/class-admin-settings.php:458
+msgid "Please select an API to test"
+msgstr "请选择要测试的API"
+
+#: admin/class-admin-settings.php:480
+msgid "Connection successful!"
+msgstr "连接成功！"
+
+#: admin/class-admin-settings.php:482
+msgid "Connection failed"
+msgstr "连接失败"
+
+#: admin/class-admin-settings.php:512
+msgid "posts generated successfully"
+msgstr "篇文章生成成功"
+
+#: admin/class-admin-settings.php:514
+msgid "Generation failed"
+msgstr "生成失败"
+
+#: admin/class-admin-settings.php:540
+msgid "Logs cleared successfully"
+msgstr "日志清除成功"
+
+#: admin/class-admin-settings.php:560
+msgid "Settings exported successfully"
+msgstr "设置导出成功"
+
+#: admin/class-admin-settings.php:588
+msgid "Invalid settings file"
+msgstr "无效的设置文件"
+
+#: admin/class-admin-settings.php:593
+msgid "Settings imported successfully"
+msgstr "设置导入成功"
+
+#: admin/class-admin-settings.php:620
+msgid "records deleted"
+msgstr "条记录已删除"
+
+#: admin/class-admin-settings.php:640
+msgid "Statistics reset successfully"
+msgstr "统计数据重置成功"
+
+#: admin/class-admin-settings.php:660
+msgid "Cron triggered successfully"
+msgstr "定时任务触发成功"
+
+#: admin/class-admin-settings.php:680
+msgid "Plugin reset successfully"
+msgstr "插件重置成功"
+
+#: admin/views/settings-page.php:15
+msgid "Basic Settings"
+msgstr "基本设置"
+
+#: admin/views/settings-page.php:16
+msgid "API Configuration"
+msgstr "API配置"
+
+#: admin/views/settings-page.php:17
+msgid "Content Templates"
+msgstr "内容模板"
+
+#: admin/views/settings-page.php:18
+msgid "History & Stats"
+msgstr "历史记录 & 统计"
+
+#: admin/views/settings-page.php:19
+msgid "Logs & Monitoring"
+msgstr "日志 & 监控"
+
+#: admin/views/settings-page.php:20
+msgid "Tools"
+msgstr "工具"
+
+#: admin/views/settings-page.php:45
+msgid "Save Changes"
+msgstr "保存更改"
+
+#: admin/views/settings-page.php:65
+msgid "Quick Actions"
+msgstr "快速操作"
+
+#: admin/views/settings-page.php:68
+msgid "Generate 1 Post Now"
+msgstr "立即生成1篇"
+
+#: admin/views/settings-page.php:69
+msgid "Generate 5 Posts"
+msgstr "生成5篇"
+
+#: admin/views/settings-page.php:70
+msgid "Test All APIs"
+msgstr "测试所有API"
+
+#: admin/views/settings-page.php:75
+msgid "Generation Schedule"
+msgstr "生成计划"
+
+#: admin/views/settings-page.php:78
+#: admin/views/tab-history.php:57
+msgid "Status"
+msgstr "状态"
+
+#: admin/views/settings-page.php:79
+msgid "Active"
+msgstr "已激活"
+
+#: admin/views/settings-page.php:79
+msgid "Inactive"
+msgstr "未激活"
+
+#: admin/views/settings-page.php:82
+msgid "Next Run"
+msgstr "下次运行"
+
+#: admin/views/settings-page.php:85
+msgid "Last Run"
+msgstr "上次运行"
+
+#: admin/views/settings-page.php:88
+msgid "Posts Per Day"
+msgstr "每日文章数"
+
+#: admin/views/tab-api-config.php:15
+msgid "API Selection"
+msgstr "API选择"
+
+#: admin/views/tab-api-config.php:20
+msgid "Choose which AI API to use for content generation"
+msgstr "选择用于内容生成的AI API"
+
+#: admin/views/tab-api-config.php:30
+msgid "Gemini"
+msgstr "Gemini"
+
+#: admin/views/tab-api-config.php:31
+msgid "DeepSeek"
+msgstr "DeepSeek"
+
+#: admin/views/tab-api-config.php:32
+msgid "OpenAI"
+msgstr "OpenAI"
+
+#: admin/views/tab-api-config.php:45
+msgid "Google Gemini API"
+msgstr "Google Gemini API"
+
+#: admin/views/tab-api-config.php:50
+msgid "API Key"
+msgstr "API密钥"
+
+#: admin/views/tab-api-config.php:56
+msgid "Model"
+msgstr "模型"
+
+#: admin/views/tab-api-config.php:64
+msgid "Temperature"
+msgstr "温度"
+
+#: admin/views/tab-api-config.php:70
+msgid "Max Tokens"
+msgstr "最大令牌数"
+
+#: admin/views/tab-api-config.php:76
+msgid "Test Connection"
+msgstr "测试连接"
+
+#: admin/views/tab-history.php:15
+msgid "Statistics Dashboard"
+msgstr "统计仪表板"
+
+#: admin/views/tab-history.php:20
+msgid "Total Posts Generated"
+msgstr "生成文章总数"
+
+#: admin/views/tab-history.php:25
+msgid "Success Rate"
+msgstr "成功率"
+
+#: admin/views/tab-history.php:30
+msgid "Total Cost"
+msgstr "总成本"
+
+#: admin/views/tab-history.php:35
+msgid "Avg Generation Time"
+msgstr "平均生成时间"
+
+#: admin/views/tab-history.php:45
+msgid "Generation History"
+msgstr "生成历史"
+
+#: admin/views/tab-history.php:50
+msgid "ID"
+msgstr "ID"
+
+#: admin/views/tab-history.php:51
+msgid "Title"
+msgstr "标题"
+
+#: admin/views/tab-history.php:52
+msgid "Topic"
+msgstr "主题"
+
+#: admin/views/tab-history.php:53
+msgid "API Used"
+msgstr "使用的API"
+
+#: admin/views/tab-history.php:54
+msgid "Tokens"
+msgstr "令牌数"
+
+#: admin/views/tab-history.php:55
+msgid "Cost"
+msgstr "成本"
+
+#: admin/views/tab-history.php:56
+msgid "Time"
+msgstr "时间"
+
+#: admin/views/tab-history.php:58
+msgid "Actions"
+msgstr "操作"
+
+#: admin/views/tab-history.php:100
+msgid "No history found"
+msgstr "未找到历史记录"
+
+#: admin/views/tab-logs.php:15
+msgid "System Logs"
+msgstr "系统日志"
+
+#: admin/views/tab-logs.php:20
+msgid "Filter"
+msgstr "筛选"
+
+#: admin/views/tab-logs.php:23
+msgid "All Levels"
+msgstr "所有级别"
+
+#: admin/views/tab-logs.php:24
+msgid "Info"
+msgstr "信息"
+
+#: admin/views/tab-logs.php:25
+msgid "Warning"
+msgstr "警告"
+
+#: admin/views/tab-logs.php:26
+msgid "Error"
+msgstr "错误"
+
+#: admin/views/tab-logs.php:29
+msgid "Clear Logs"
+msgstr "清除日志"
+
+#: admin/views/tab-logs.php:40
+msgid "Timestamp"
+msgstr "时间戳"
+
+#: admin/views/tab-logs.php:41
+msgid "Level"
+msgstr "级别"
+
+#: admin/views/tab-logs.php:42
+msgid "Message"
+msgstr "消息"
+
+#: admin/views/tab-logs.php:80
+msgid "No logs found"
+msgstr "未找到日志"
+
+#: admin/views/tab-logs.php:90
+#: admin/views/tab-tools.php:130
+msgid "System Information"
+msgstr "系统信息"
+
+#: admin/views/tab-logs.php:95
+msgid "Plugin Version"
+msgstr "插件版本"
+
+#: admin/views/tab-logs.php:98
+msgid "WordPress Version"
+msgstr "WordPress版本"
+
+#: admin/views/tab-logs.php:101
+msgid "PHP Version"
+msgstr "PHP版本"
+
+#: admin/views/tab-logs.php:104
+msgid "Server Software"
+msgstr "服务器软件"
+
+#: admin/views/tab-logs.php:107
+msgid "WP Cron Status"
+msgstr "WP定时任务状态"
+
+#: admin/views/tab-logs.php:108
+msgid "Enabled"
+msgstr "已启用"
+
+#: admin/views/tab-logs.php:108
+msgid "Disabled"
+msgstr "已禁用"
+
+#: admin/views/tab-templates.php:20
+msgid "This is the main instruction given to the AI"
+msgstr "这是给AI的主要指令"
+
+#: admin/views/tab-templates.php:35
+msgid "Template for generating individual articles. Available variables: {topic}, {sub_topics}, {style}, {audience}, {word_count}, {angle}"
+msgstr "用于生成单篇文章的模板。可用变量：{topic}, {sub_topics}, {style}, {audience}, {word_count}, {angle}"
+
+#: admin/views/tab-templates.php:50
+msgid "Different perspectives for content variety (one per line)"
+msgstr "不同的内容视角以增加多样性（每行一个）"
+
+#: admin/views/tab-tools.php:15
+msgid "Settings Management"
+msgstr "设置管理"
+
+#: admin/views/tab-tools.php:20
+msgid "Export Settings"
+msgstr "导出设置"
+
+#: admin/views/tab-tools.php:25
+msgid "Export all plugin settings to a JSON file for backup or migration"
+msgstr "将所有插件设置导出为JSON文件以进行备份或迁移"
+
+#: admin/views/tab-tools.php:40
+msgid "Import Settings"
+msgstr "导入设置"
+
+#: admin/views/tab-tools.php:45
+msgid "Import settings from a previously exported JSON file"
+msgstr "从之前导出的JSON文件导入设置"
+
+#: admin/views/tab-tools.php:50
+msgid "Choose File"
+msgstr "选择文件"
+
+#: admin/views/tab-tools.php:60
+msgid "Database Management"
+msgstr "数据库管理"
+
+#: admin/views/tab-tools.php:65
+msgid "Clean Old Records"
+msgstr "清理旧记录"
+
+#: admin/views/tab-tools.php:70
+msgid "Delete generation history older than specified days"
+msgstr "删除超过指定天数的生成历史"
+
+#: admin/views/tab-tools.php:75
+msgid "Days to keep"
+msgstr "保留天数"
+
+#: admin/views/tab-tools.php:76
+msgid "Clean Records"
+msgstr "清理记录"
+
+#: admin/views/tab-tools.php:85
+#: admin/views/tab-tools.php:95
+msgid "Reset Statistics"
+msgstr "重置统计"
+
+#: admin/views/tab-tools.php:90
+msgid "Reset all API usage statistics to zero"
+msgstr "将所有API使用统计重置为零"
+
+#: admin/views/tab-tools.php:105
+msgid "System Tools"
+msgstr "系统工具"
+
+#: admin/views/tab-tools.php:110
+msgid "Test WordPress Cron"
+msgstr "测试WordPress定时任务"
+
+#: admin/views/tab-tools.php:115
+msgid "Manually trigger the scheduled generation task for testing"
+msgstr "手动触发计划的生成任务以进行测试"
+
+#: admin/views/tab-tools.php:120
+msgid "Run Cron Now"
+msgstr "立即运行定时任务"
+
+#: admin/views/tab-tools.php:135
+msgid "Copy system information for bug reports"
+msgstr "复制系统信息以用于错误报告"
+
+#: admin/views/tab-tools.php:140
+msgid "Copy System Info"
+msgstr "复制系统信息"
+
+#: admin/views/tab-tools.php:150
+msgid "Danger Zone"
+msgstr "危险区域"
+
+#: admin/views/tab-tools.php:155
+#: admin/views/tab-tools.php:165
+msgid "Reset Plugin"
+msgstr "重置插件"
+
+#: admin/views/tab-tools.php:160
+msgid "WARNING: This will delete all settings, history, and logs. Generated WordPress posts will remain."
+msgstr "警告：这将删除所有设置、历史记录和日志。已生成的WordPress文章将保留。"
+
+#: includes/class-content-generator.php:87
+msgid "Main topic is not set"
+msgstr "未设置主要主题"
+
+#: includes/class-content-generator.php:128
+msgid "Generated content is empty"
+msgstr "生成的内容为空"
+
+#: includes/class-content-generator.php:145
+msgid "Generated content is too short"
+msgstr "生成的内容太短"
+
+#: includes/class-content-generator.php:259
+msgid "Failed to generate unique title after multiple attempts"
+msgstr "多次尝试后仍无法生成唯一标题"
+
+#: includes/class-content-generator.php:200
+msgid "Failed to generate article content"
+msgstr "生成文章内容失败"
+
+#: includes/class-scheduler.php:211
+msgid "Main topic is not configured"
+msgstr "未配置主要主题"
+
+#: includes/class-scheduler.php:221
+msgid "Post generated successfully!"
+msgstr "文章生成成功！"
+
+#: includes/class-scheduler.php:233
+msgid "%d posts generated successfully, %d failed"
+msgstr "成功生成%d篇文章，失败%d篇"
+
+#: includes/api/class-gemini-api.php:76
+msgid "Gemini API configuration is invalid"
+msgstr "Gemini API配置无效"
+
+#: includes/api/class-gemini-api.php:200
+msgid "API Key is not configured"
+msgstr "未配置API密钥"
+
+#: includes/api/class-gemini-api.php:216
+msgid "Response:"
+msgstr "响应："
+
+#: includes/api/class-gemini-api.php:222
+msgid "Connection failed:"
+msgstr "连接失败："
+
+#: includes/api/class-deepseek-api.php:76
+msgid "DeepSeek API configuration is invalid"
+msgstr "DeepSeek API配置无效"
+
+#: includes/api/class-openai-api.php:76
+msgid "OpenAI API configuration is invalid"
+msgstr "OpenAI API配置无效"
+
+#: admin/class-admin-settings.php:477
+msgid "Please select a file to import"
+msgstr "请选择要导入的文件"
+
+#: admin/class-admin-settings.php:494
+msgid "Only JSON files are allowed"
+msgstr "只允许JSON文件"
+
+#: admin/class-admin-settings.php:505
+msgid "File size must be less than 1MB"
+msgstr "文件大小必须小于1MB"
+
+#: admin/class-admin-settings.php:519
+msgid "File content is too large"
+msgstr "文件内容过大"
+
+#: admin/class-admin-settings.php:531
+msgid "Invalid JSON file"
+msgstr "无效的JSON文件"
+
+#: admin/class-admin-settings.php:542
+msgid "Invalid settings format"
+msgstr "无效的设置格式"
+
+#: admin/class-admin-settings.php:571
+msgid "No valid settings found in file"
+msgstr "文件中未找到有效设置"
+
+#: admin/class-admin-settings.php:653
+msgid "No records selected"
+msgstr "未选择记录"
+
+#: admin/class-admin-settings.php:664
+msgid "Deleted %d record(s)"
+msgstr "已删除%d条记录"
+
+#: includes/class-content-generator.php:42
+msgid "News Report - Latest developments and breaking news"
+msgstr "新闻报道 - 最新动态和突发新闻"
+
+#: includes/class-content-generator.php:43
+msgid "In-depth Analysis - Detailed examination and insights"
+msgstr "深度分析 - 详细检查和见解"
+
+#: includes/class-content-generator.php:44
+msgid "How-to Guide - Step-by-step instructions"
+msgstr "操作指南 - 分步说明"
+
+#: includes/class-content-generator.php:45
+msgid "Case Study - Real-world examples and lessons"
+msgstr "案例研究 - 真实案例和经验"
+
+#: includes/class-content-generator.php:46
+msgid "Trend Analysis - Future predictions and patterns"
+msgstr "趋势分析 - 未来预测和模式"
+
+#: includes/class-content-generator.php:47
+msgid "Comparison - Pros, cons, and alternatives"
+msgstr "对比分析 - 优缺点和替代方案"
+
+#: includes/class-content-generator.php:48
+msgid "Opinion Piece - Expert perspectives"
+msgstr "观点文章 - 专家观点"
+
+#: includes/class-content-generator.php:49
+msgid "Tutorial - Practical learning content"
+msgstr "教程 - 实用学习内容"
+
+#: includes/class-scheduler.php:53
+msgid "Once Hourly"
+msgstr "每小时一次"
+
+#: includes/class-scheduler.php:59
+msgid "Twice Daily"
+msgstr "每日两次"
+
+#: includes/class-scheduler.php:65
+msgid "Once Weekly"
+msgstr "每周一次"
