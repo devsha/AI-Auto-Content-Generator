@@ -18,10 +18,16 @@ class AIACG_Admin_Settings {
     public function __construct() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_init', array($this, 'handle_settings_import'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('wp_ajax_aiacg_test_api', array($this, 'ajax_test_api'));
         add_action('wp_ajax_aiacg_generate_now', array($this, 'ajax_generate_now'));
         add_action('wp_ajax_aiacg_clear_logs', array($this, 'ajax_clear_logs'));
+        add_action('wp_ajax_aiacg_export_settings', array($this, 'ajax_export_settings'));
+        add_action('wp_ajax_aiacg_delete_history', array($this, 'ajax_delete_history'));
+        add_action('wp_ajax_aiacg_cleanup_records', array($this, 'ajax_cleanup_records'));
+        add_action('wp_ajax_aiacg_reset_stats', array($this, 'ajax_reset_stats'));
+        add_action('wp_ajax_aiacg_reset_plugin', array($this, 'ajax_reset_plugin'));
         add_filter('plugin_action_links_' . AIACG_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
     }
 
@@ -424,5 +430,249 @@ class AIACG_Admin_Settings {
             <?php submit_button(); ?>
         </form>
         <?php
+    }
+
+    /**
+     * AJAX: 导出设置
+     */
+    public function ajax_export_settings() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $settings = $this->get_all_settings();
+
+        // 创建JSON文件
+        $filename = 'aiacg-settings-' . date('Y-m-d-His') . '.json';
+        $json = wp_json_encode($settings, JSON_PRETTY_PRINT);
+
+        header('Content-Type: application/json');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . strlen($json));
+
+        echo $json;
+        exit;
+    }
+
+    /**
+     * 处理设置导入
+     */
+    public function handle_settings_import() {
+        if (!isset($_POST['aiacg_import_settings'])) {
+            return;
+        }
+
+        check_admin_referer('aiacg_import_settings');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Permission denied', 'ai-auto-content-generator'));
+        }
+
+        if (empty($_FILES['settings_file']['tmp_name'])) {
+            add_settings_error(
+                'aiacg_settings',
+                'import_error',
+                __('Please select a file to import', 'ai-auto-content-generator'),
+                'error'
+            );
+            return;
+        }
+
+        $file = $_FILES['settings_file']['tmp_name'];
+        $json = file_get_contents($file);
+        $settings = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            add_settings_error(
+                'aiacg_settings',
+                'import_error',
+                __('Invalid JSON file', 'ai-auto-content-generator'),
+                'error'
+            );
+            return;
+        }
+
+        // 导入设置
+        foreach ($settings as $key => $value) {
+            update_option($key, $value);
+        }
+
+        add_settings_error(
+            'aiacg_settings',
+            'import_success',
+            __('Settings imported successfully!', 'ai-auto-content-generator'),
+            'updated'
+        );
+
+        // 重新安排定时任务
+        $scheduler = new AIACG_Scheduler();
+        $scheduler->reschedule_daily_generation(get_option('aiacg_generation_time', '02:00'));
+    }
+
+    /**
+     * 获取所有设置
+     */
+    private function get_all_settings() {
+        $settings = array();
+
+        $option_keys = array(
+            'aiacg_main_topic',
+            'aiacg_topic_description',
+            'aiacg_sub_topics',
+            'aiacg_writing_style',
+            'aiacg_target_audience',
+            'aiacg_daily_post_count',
+            'aiacg_word_count',
+            'aiacg_generation_time',
+            'aiacg_publish_mode',
+            'aiacg_publish_interval',
+            'aiacg_default_category',
+            'aiacg_auto_tags',
+            'aiacg_generate_featured_image',
+            'aiacg_seo_optimization',
+            'aiacg_active_api',
+            'aiacg_enable_api_rotation',
+            'aiacg_api_priority',
+            'aiacg_auto_switch_on_failure',
+            'aiacg_gemini_model',
+            'aiacg_gemini_temperature',
+            'aiacg_gemini_max_tokens',
+            'aiacg_deepseek_model',
+            'aiacg_deepseek_temperature',
+            'aiacg_deepseek_max_tokens',
+            'aiacg_openai_model',
+            'aiacg_openai_temperature',
+            'aiacg_openai_max_tokens',
+            'aiacg_system_prompt',
+            'aiacg_user_prompt_template',
+            'aiacg_writing_angles',
+            'aiacg_title_min_length',
+            'aiacg_title_max_length',
+        );
+
+        foreach ($option_keys as $key) {
+            $value = get_option($key);
+            if ($value !== false) {
+                $settings[$key] = $value;
+            }
+        }
+
+        return $settings;
+    }
+
+    /**
+     * AJAX: 删除历史记录
+     */
+    public function ajax_delete_history() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $history_ids = isset($_POST['ids']) ? array_map('intval', $_POST['ids']) : array();
+
+        if (empty($history_ids)) {
+            wp_send_json_error(array('message' => __('No records selected', 'ai-auto-content-generator')));
+        }
+
+        $deleted = 0;
+        foreach ($history_ids as $id) {
+            if (AIACG_Database::delete_history($id)) {
+                $deleted++;
+            }
+        }
+
+        wp_send_json_success(array(
+            'message' => sprintf(__('Deleted %d record(s)', 'ai-auto-content-generator'), $deleted),
+            'deleted' => $deleted
+        ));
+    }
+
+    /**
+     * AJAX: 清理旧记录
+     */
+    public function ajax_cleanup_records() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $days = isset($_POST['days']) ? intval($_POST['days']) : 90;
+        $days = max(7, min(365, $days)); // 限制在7-365天之间
+
+        $deleted = AIACG_Database::cleanup_old_records($days);
+
+        wp_send_json_success(array(
+            'message' => sprintf(__('Deleted %d old record(s)', 'ai-auto-content-generator'), $deleted),
+            'deleted' => $deleted
+        ));
+    }
+
+    /**
+     * AJAX: 重置统计数据
+     */
+    public function ajax_reset_stats() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        // 重置所有API的使用统计
+        delete_option('aiacg_gemini_usage_stats');
+        delete_option('aiacg_deepseek_usage_stats');
+        delete_option('aiacg_openai_usage_stats');
+
+        wp_send_json_success(array(
+            'message' => __('All statistics have been reset', 'ai-auto-content-generator')
+        ));
+    }
+
+    /**
+     * AJAX: 重置插件
+     */
+    public function ajax_reset_plugin() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        // 删除所有选项
+        $options = array(
+            'aiacg_main_topic', 'aiacg_topic_description', 'aiacg_sub_topics',
+            'aiacg_writing_style', 'aiacg_target_audience', 'aiacg_daily_post_count',
+            'aiacg_word_count', 'aiacg_generation_time', 'aiacg_publish_mode',
+            'aiacg_publish_interval', 'aiacg_default_category', 'aiacg_auto_tags',
+            'aiacg_generate_featured_image', 'aiacg_seo_optimization', 'aiacg_active_api',
+            'aiacg_gemini_api_key', 'aiacg_gemini_model', 'aiacg_gemini_temperature',
+            'aiacg_gemini_max_tokens', 'aiacg_deepseek_api_key', 'aiacg_deepseek_model',
+            'aiacg_deepseek_temperature', 'aiacg_openai_api_key', 'aiacg_openai_model',
+            'aiacg_openai_temperature', 'aiacg_enable_api_rotation', 'aiacg_api_priority',
+            'aiacg_auto_switch_on_failure', 'aiacg_system_prompt', 'aiacg_user_prompt_template',
+            'aiacg_writing_angles', 'aiacg_title_min_length', 'aiacg_title_max_length',
+            'aiacg_gemini_usage_stats', 'aiacg_deepseek_usage_stats', 'aiacg_openai_usage_stats',
+            'aiacg_logs', 'aiacg_last_generation_time', 'aiacg_last_generation_result'
+        );
+
+        foreach ($options as $option) {
+            delete_option($option);
+        }
+
+        // 清空数据库表
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'aiacg_content_history';
+        $wpdb->query("TRUNCATE TABLE {$table_name}");
+
+        // 清除定时任务
+        wp_clear_scheduled_hook('aiacg_daily_generation');
+
+        wp_send_json_success(array(
+            'message' => __('Plugin has been reset to defaults', 'ai-auto-content-generator')
+        ));
     }
 }

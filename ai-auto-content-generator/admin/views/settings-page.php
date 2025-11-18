@@ -50,6 +50,9 @@ $statistics = AIACG_Database::get_statistics();
         <a href="?page=aiacg-settings&tab=logs" class="nav-tab <?php echo $active_tab === 'logs' ? 'nav-tab-active' : ''; ?>">
             <?php _e('Logs & Monitoring', 'ai-auto-content-generator'); ?>
         </a>
+        <a href="?page=aiacg-settings&tab=tools" class="nav-tab <?php echo $active_tab === 'tools' ? 'nav-tab-active' : ''; ?>">
+            <?php _e('Tools', 'ai-auto-content-generator'); ?>
+        </a>
     </h2>
 
     <div class="aiacg-tab-content">
@@ -66,6 +69,9 @@ $statistics = AIACG_Database::get_statistics();
                 break;
             case 'logs':
                 include __DIR__ . '/tab-logs.php';
+                break;
+            case 'tools':
+                include __DIR__ . '/tab-tools.php';
                 break;
             case 'basic':
             default:
