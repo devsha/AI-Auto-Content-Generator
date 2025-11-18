@@ -456,6 +456,15 @@ class AIACG_Content_Generator {
         $str1 = strtolower($str1);
         $str2 = strtolower($str2);
 
+        // Levenshtein函数限制字符串长度不超过255字符
+        // 如果超过，截取前255字符进行比较
+        if (strlen($str1) > 255) {
+            $str1 = substr($str1, 0, 255);
+        }
+        if (strlen($str2) > 255) {
+            $str2 = substr($str2, 0, 255);
+        }
+
         // 使用Levenshtein距离算法
         $lev = levenshtein($str1, $str2);
         $max_len = max(strlen($str1), strlen($str2));

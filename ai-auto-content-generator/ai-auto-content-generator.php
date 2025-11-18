@@ -186,40 +186,10 @@ function aiacg_deactivate() {
     flush_rewrite_rules();
 }
 
-/**
- * 插件卸载时的操作
- */
-function aiacg_uninstall() {
-    // 删除数据库表
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'aiacg_content_history';
-    $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
-
-    // 删除所有选项
-    $options = array(
-        'main_topic', 'topic_description', 'sub_topics', 'writing_style',
-        'target_audience', 'daily_post_count', 'word_count', 'generation_time',
-        'publish_mode', 'publish_interval', 'default_category', 'auto_tags',
-        'generate_featured_image', 'seo_optimization', 'active_api',
-        'gemini_api_key', 'gemini_model', 'gemini_temperature', 'gemini_max_tokens',
-        'deepseek_api_key', 'deepseek_model', 'deepseek_temperature',
-        'openai_api_key', 'openai_model', 'openai_temperature',
-        'custom_api_endpoint', 'custom_api_key', 'custom_api_headers',
-        'enable_api_rotation', 'api_priority', 'auto_switch_on_failure',
-        'system_prompt', 'user_prompt_template', 'writing_angles',
-        'title_min_length', 'title_max_length', 'title_rules',
-        'version'
-    );
-
-    foreach ($options as $option) {
-        delete_option('aiacg_' . $option);
-    }
-}
-
-// 注册激活、停用和卸载钩子
+// 注册激活和停用钩子
+// 注意：卸载处理在单独的 uninstall.php 文件中
 register_activation_hook(__FILE__, 'aiacg_activate');
 register_deactivation_hook(__FILE__, 'aiacg_deactivate');
-register_uninstall_hook(__FILE__, 'aiacg_uninstall');
 
 /**
  * 开始运行插件

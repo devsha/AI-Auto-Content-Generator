@@ -148,6 +148,17 @@ class AIACG_Database {
 
         $args = wp_parse_args($args, $defaults);
 
+        // 白名单验证 orderby 和 order 参数以防止SQL注入
+        $allowed_orderby = array('id', 'post_id', 'topic', 'generated_title', 'api_used', 'tokens_used', 'generation_time', 'status', 'word_count', 'cost_estimate');
+        if (!in_array($args['orderby'], $allowed_orderby, true)) {
+            $args['orderby'] = 'generation_time';
+        }
+
+        $args['order'] = strtoupper($args['order']);
+        if (!in_array($args['order'], array('ASC', 'DESC'), true)) {
+            $args['order'] = 'DESC';
+        }
+
         $where = array('1=1');
         $where_values = array();
 
@@ -179,6 +190,7 @@ class AIACG_Database {
             $sql = $wpdb->prepare($sql, $where_values);
         }
 
+        // 安全地添加 ORDER BY 和 LIMIT 子句（orderby 和 order 已经过白名单验证）
         $sql .= $wpdb->prepare(
             " ORDER BY {$args['orderby']} {$args['order']} LIMIT %d OFFSET %d",
             $args['limit'],
