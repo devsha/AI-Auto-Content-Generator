@@ -298,7 +298,154 @@
             $(this).attr('title', $(this).data('tooltip'));
         });
 
+        /**
+         * Initialize Dashboard Charts (v1.1.0)
+         */
+        if (typeof Chart !== 'undefined') {
+            initDashboardCharts();
+        } else {
+            // Load Chart.js from CDN if not available
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+            script.onload = function() {
+                initDashboardCharts();
+            };
+            document.head.appendChild(script);
+        }
+
     });
+
+    /**
+     * Initialize Dashboard Charts
+     */
+    function initDashboardCharts() {
+        // Trend Chart (7-day generation trend)
+        var trendCanvas = document.getElementById('aiacg-trend-chart');
+        if (trendCanvas) {
+            var trendData = JSON.parse(trendCanvas.dataset.stats || '[]');
+
+            var trendLabels = trendData.map(function(item) { return item.date; });
+            var trendValues = trendData.map(function(item) { return item.count; });
+
+            new Chart(trendCanvas, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Posts Generated',
+                        data: trendValues,
+                        borderColor: '#0073aa',
+                        backgroundColor: 'rgba(0, 115, 170, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#0073aa',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Generated: ' + context.parsed.y + ' posts';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // API Usage Distribution Chart (Pie/Doughnut)
+        var apiCanvas = document.getElementById('aiacg-api-chart');
+        if (apiCanvas) {
+            var apiData = JSON.parse(apiCanvas.dataset.stats || '[]');
+
+            var apiLabels = apiData.map(function(item) { return item.label; });
+            var apiValues = apiData.map(function(item) { return item.value; });
+
+            var apiColors = [
+                '#0073aa', // Gemini - Blue
+                '#46b450', // DeepSeek - Green
+                '#ffb900', // OpenAI - Yellow
+                '#826eb4', // Others - Purple
+                '#dc3232'  // Fallback - Red
+            ];
+
+            new Chart(apiCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: apiLabels,
+                    datasets: [{
+                        data: apiValues,
+                        backgroundColor: apiColors.slice(0, apiLabels.length),
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    var value = context.parsed || 0;
+                                    var total = context.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                    var percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     // Helper: Get admin URL
     var adminUrl = window.location.origin + '/wp-admin/';

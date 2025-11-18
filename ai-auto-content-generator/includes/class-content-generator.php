@@ -89,6 +89,18 @@ class AIACG_Content_Generator {
             );
         }
 
+        // 检查预算限制
+        $budget_check = AIACG_Budget_Manager::can_generate();
+        if (!$budget_check['allowed']) {
+            AIACG_Database::log('Generation blocked: ' . $budget_check['reason'], 'warning');
+            return array(
+                'success' => false,
+                'post_id' => 0,
+                'error' => $budget_check['reason'],
+                'details' => array(),
+            );
+        }
+
         // 创建历史记录
         $history_id = AIACG_Database::insert_history(array(
             'topic' => $args['topic'],
@@ -207,18 +219,36 @@ class AIACG_Content_Generator {
             $this->add_seo_meta($post_id, $title, $excerpt, $tags);
         }
 
+        // 评估内容质量
+        $quality_evaluation = AIACG_Content_Quality::evaluate($title, $content_result['content']);
+        $quality_score = $quality_evaluation['overall_score'];
+
+        // 记录质量评估详情
+        AIACG_Database::log('Content quality evaluated', 'info', array(
+            'post_id' => $post_id,
+            'quality_score' => $quality_score,
+            'grade' => AIACG_Content_Quality::get_quality_grade($quality_score),
+            'seo_score' => $quality_evaluation['seo']['score'],
+            'readability_score' => $quality_evaluation['readability']['score'],
+            'structure_score' => $quality_evaluation['structure']['score'],
+        ));
+
         // 更新历史记录
         AIACG_Database::update_history($history_id, array(
             'post_id' => $post_id,
             'generated_title' => $title,
-            'status' => 'success',
+            'status' => 'completed',
             'api_used' => $content_result['api_used'],
             'tokens_used' => $content_result['tokens'],
             'word_count' => str_word_count(strip_tags($content_result['content'])),
             'writing_angle' => $angle,
             'cost_estimate' => $content_result['cost'],
             'prompt_used' => $content_result['prompt_used'],
+            'quality_score' => $quality_score,
         ));
+
+        // 检查并发送预算警告
+        AIACG_Budget_Manager::check_and_warn();
 
         AIACG_Database::log('Content generated successfully', 'info', array(
             'post_id' => $post_id,
