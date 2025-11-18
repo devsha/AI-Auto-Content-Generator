@@ -4,7 +4,7 @@ Tags: ai, content, automation, gemini, openai, deepseek, auto-post, blog, writin
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -184,6 +184,36 @@ Yes! You can:
 6. Tools - Import/export settings, database cleanup, system info
 
 == Changelog ==
+
+= 1.1.0 - 2024-11-18 =
+
+**Major Feature Enhancements:**
+* Added comprehensive Dashboard tab with visual statistics and analytics
+* Implemented Budget Control System with daily and monthly limits
+* Added Content Quality Scoring (SEO, Readability, and Structure analysis)
+* Integrated visual charts for generation trends and API usage distribution
+* Added budget usage tracking with progress bars and warnings
+
+**New Features:**
+* Dashboard displays: Total posts, success rate, costs, and token usage
+* 7-day generation trend chart with daily breakdowns
+* API usage distribution pie chart
+* Budget management with daily/monthly spending limits
+* Automatic budget warning emails when threshold is reached
+* Content quality evaluation with actionable improvement suggestions
+* Recent activity feed showing last 10 generated posts
+
+**Improvements:**
+* Enhanced statistics system with more detailed metrics
+* Better data visualization for decision making
+* Proactive cost management and budget protection
+* Quality-focused content generation with scoring
+* Dashboard is now the default landing page for better UX
+
+**Database Updates:**
+* Added quality_score field to content history table
+* New statistics methods for dashboard analytics
+* Optimized queries for better performance
 
 = 1.0.4 - 2024-11-18 =
 

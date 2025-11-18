@@ -10,13 +10,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned Features
 - AI image generation integration (DALL-E, Stable Diffusion)
 - Multi-language content generation
-- Advanced analytics dashboard
 - Content calendar with visual scheduling
 - Webhook integrations (Zapier, Make)
 - Custom post type support
 - A/B testing for prompts
 - REST API endpoints
 - Integration with popular SEO plugins (Yoast, Rank Math)
+- API key encryption for enhanced security
+- Content preview before publishing
+- Advanced error recovery mechanisms
+
+---
+
+## [1.1.0] - 2024-11-18
+
+### Added - Major Features
+- **📊 Dashboard Tab**: Comprehensive analytics and statistics overview
+  - Visual statistics cards (Total Posts, Success Rate, Costs, Tokens)
+  - 7-day generation trend chart
+  - API usage distribution chart
+  - Recent activity feed with last 10 posts
+  - Quick action buttons for common tasks
+
+- **💰 Budget Control System**:
+  - Daily budget limits with real-time tracking
+  - Monthly budget limits with cumulative monitoring
+  - Visual progress bars showing budget consumption
+  - Automatic budget warning emails (configurable threshold)
+  - Budget status display on dashboard
+  - Automatic generation blocking when limit reached
+
+- **📝 Content Quality Scoring**:
+  - SEO evaluation (title length, headings, keywords, structure)
+  - Readability analysis (sentence length, paragraph length, transitions)
+  - Structure assessment (introduction, sections, conclusion)
+  - Overall quality score (0-100) with grading system
+  - Actionable improvement suggestions
+  - Quality scores displayed in history and dashboard
+
+### Added - New Classes
+- `AIACG_Budget_Manager`: Handles all budget-related operations
+- `AIACG_Content_Quality`: Evaluates content quality with detailed metrics
+
+### Added - Database
+- New field: `quality_score` in content history table
+- New method: `get_api_usage_stats()` for API distribution data
+- New method: `get_daily_stats($days)` for trend chart data
+- Enhanced `get_statistics()` with token tracking
+
+### Added - Settings
+- `aiacg_daily_budget_limit`: Daily spending cap
+- `aiacg_monthly_budget_limit`: Monthly spending cap
+- `aiacg_email_on_budget_warning`: Budget alert email toggle
+- `aiacg_budget_warning_threshold`: Warning percentage trigger (default: 80%)
+
+### Changed
+- **Default Tab**: Dashboard is now the default landing page (was Basic Settings)
+- **Navigation**: Added Dashboard as first tab with 📊 icon
+- **Statistics**: Enhanced with total tokens and improved accuracy
+- **Success Rate Calculation**: Now uses 'completed' status instead of 'success'
+
+### Improved
+- Better data visualization for informed decision-making
+- Proactive cost management and overspending prevention
+- Quality-focused content generation with measurable metrics
+- Enhanced user experience with visual dashboards
+- More detailed tracking and reporting capabilities
+
+### Version Updates
+- Plugin version: 1.0.4 → 1.1.0
+- Updated readme.txt with new feature descriptions
+- Updated CHANGELOG.md with comprehensive release notes
 
 ---
 

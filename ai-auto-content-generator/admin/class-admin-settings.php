@@ -109,6 +109,12 @@ class AIACG_Admin_Settings {
         register_setting('aiacg_other_settings', 'aiacg_enable_logging');
         register_setting('aiacg_other_settings', 'aiacg_email_on_error');
         register_setting('aiacg_other_settings', 'aiacg_history_retention_days');
+
+        // 预算控制设置
+        register_setting('aiacg_budget_settings', 'aiacg_daily_budget_limit');
+        register_setting('aiacg_budget_settings', 'aiacg_monthly_budget_limit');
+        register_setting('aiacg_budget_settings', 'aiacg_email_on_budget_warning');
+        register_setting('aiacg_budget_settings', 'aiacg_budget_warning_threshold');
     }
 
     /**
@@ -155,7 +161,7 @@ class AIACG_Admin_Settings {
             wp_die(__('You do not have sufficient permissions to access this page.', 'ai-auto-content-generator'));
         }
 
-        $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'basic';
+        $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'dashboard';
 
         include AIACG_PLUGIN_DIR . 'admin/views/settings-page.php';
     }

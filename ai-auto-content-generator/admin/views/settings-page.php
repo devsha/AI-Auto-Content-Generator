@@ -35,6 +35,9 @@ $statistics = AIACG_Database::get_statistics();
     </div>
 
     <h2 class="nav-tab-wrapper">
+        <a href="?page=aiacg-settings&tab=dashboard" class="nav-tab <?php echo $active_tab === 'dashboard' ? 'nav-tab-active' : ''; ?>">
+            📊 <?php _e('Dashboard', 'ai-auto-content-generator'); ?>
+        </a>
         <a href="?page=aiacg-settings&tab=basic" class="nav-tab <?php echo $active_tab === 'basic' ? 'nav-tab-active' : ''; ?>">
             <?php _e('Basic Settings', 'ai-auto-content-generator'); ?>
         </a>
@@ -58,6 +61,9 @@ $statistics = AIACG_Database::get_statistics();
     <div class="aiacg-tab-content">
         <?php
         switch ($active_tab) {
+            case 'dashboard':
+                include __DIR__ . '/tab-dashboard.php';
+                break;
             case 'api':
                 include __DIR__ . '/tab-api-config.php';
                 break;

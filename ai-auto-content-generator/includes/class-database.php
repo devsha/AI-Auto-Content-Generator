@@ -43,6 +43,7 @@ class AIACG_Database {
             writing_angle VARCHAR(100),
             similarity_score FLOAT DEFAULT 0,
             cost_estimate DECIMAL(10,6) DEFAULT 0,
+            quality_score INT DEFAULT 0,
             PRIMARY KEY (id),
             KEY post_id (post_id),
             KEY status (status),
@@ -214,6 +215,7 @@ class AIACG_Database {
             'this_month' => 0,
             'total_api_calls' => 0,
             'total_cost' => 0,
+            'total_tokens' => 0,
             'success_rate' => 0,
             'by_api' => array(),
             'by_status' => array(),
@@ -228,6 +230,9 @@ class AIACG_Database {
             date('n'),
             date('Y')
         ));
+
+        // 总tokens使用
+        $stats['total_tokens'] = $wpdb->get_var("SELECT SUM(tokens_used) FROM {$table_name}") ?: 0;
 
         // API调用统计
         $api_stats = $wpdb->get_results(
@@ -253,9 +258,62 @@ class AIACG_Database {
         }
 
         // 成功率
-        $success_count = isset($stats['by_status']['success']) ? $stats['by_status']['success'] : 0;
+        $success_count = isset($stats['by_status']['completed']) ? $stats['by_status']['completed'] : 0;
         if ($stats['total_generated'] > 0) {
             $stats['success_rate'] = ($success_count / $stats['total_generated']) * 100;
+        }
+
+        return $stats;
+    }
+
+    /**
+     * 获取API使用统计
+     *
+     * @return array
+     */
+    public static function get_api_usage_stats() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::TABLE_NAME;
+
+        $results = $wpdb->get_results(
+            "SELECT api_used, COUNT(*) as count FROM {$table_name} WHERE status = 'completed' GROUP BY api_used"
+        );
+
+        $stats = array();
+        foreach ($results as $row) {
+            $stats[] = array(
+                'label' => strtoupper($row->api_used),
+                'value' => intval($row->count),
+            );
+        }
+
+        return $stats;
+    }
+
+    /**
+     * 获取每日统计
+     *
+     * @param int $days 天数
+     * @return array
+     */
+    public static function get_daily_stats($days = 7) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::TABLE_NAME;
+
+        $stats = array();
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $date_label = date('m/d', strtotime($date));
+
+            $count = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table_name} WHERE DATE(generation_time) = %s AND status = 'completed'",
+                $date
+            ));
+
+            $stats[] = array(
+                'date' => $date_label,
+                'count' => intval($count),
+            );
         }
 
         return $stats;
