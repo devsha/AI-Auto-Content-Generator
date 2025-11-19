@@ -150,6 +150,141 @@ if (!defined('ABSPATH')) {
 
     <hr style="margin: 30px 0;">
 
+    <h2><?php _e('Batch Operations', 'ai-auto-content-generator'); ?></h2>
+
+    <div class="aiacg-tool-box">
+        <h3><?php _e('Batch Update Categories & Tags', 'ai-auto-content-generator'); ?></h3>
+        <p><?php _e('Apply categories and tags to all generated posts in bulk.', 'ai-auto-content-generator'); ?></p>
+
+        <div style="margin-bottom: 15px;">
+            <label>
+                <strong><?php _e('Date Range:', 'ai-auto-content-generator'); ?></strong><br>
+                <?php _e('From:', 'ai-auto-content-generator'); ?>
+                <input type="date" id="aiacg-batch-date-from" style="margin-right: 10px;">
+                <?php _e('To:', 'ai-auto-content-generator'); ?>
+                <input type="date" id="aiacg-batch-date-to" value="<?php echo date('Y-m-d'); ?>">
+            </label>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label>
+                <strong><?php _e('Categories:', 'ai-auto-content-generator'); ?></strong><br>
+                <?php
+                wp_dropdown_categories(array(
+                    'show_option_none' => __('— No Change —', 'ai-auto-content-generator'),
+                    'option_none_value' => '',
+                    'hide_empty' => 0,
+                    'hierarchical' => 1,
+                    'id' => 'aiacg-batch-category',
+                    'name' => 'aiacg_batch_category',
+                    'class' => 'regular-text',
+                ));
+                ?>
+            </label>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label>
+                <strong><?php _e('Add Tags (comma separated):', 'ai-auto-content-generator'); ?></strong><br>
+                <input type="text" id="aiacg-batch-tags" class="regular-text" placeholder="<?php esc_attr_e('tag1, tag2, tag3', 'ai-auto-content-generator'); ?>">
+            </label>
+        </div>
+
+        <button type="button" class="button button-primary aiacg-batch-update-taxonomy">
+            <span class="dashicons dashicons-category" style="margin-top: 3px;"></span>
+            <?php _e('Apply to Generated Posts', 'ai-auto-content-generator'); ?>
+        </button>
+
+        <div id="aiacg-batch-taxonomy-progress" style="margin-top: 15px; display: none;">
+            <div class="progress-bar" style="width: 100%; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                <div class="progress-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #46b450 0%, #0073aa 100%); transition: width 0.3s ease;"></div>
+            </div>
+            <p id="aiacg-batch-taxonomy-status" style="margin-top: 10px; font-weight: 600;"></p>
+        </div>
+    </div>
+
+    <div class="aiacg-tool-box" style="margin-top: 20px;">
+        <h3><?php _e('Batch Update Post Status', 'ai-auto-content-generator'); ?></h3>
+        <p><?php _e('Change the publish status of generated posts in bulk (draft, publish, private, etc).', 'ai-auto-content-generator'); ?></p>
+
+        <div style="margin-bottom: 15px;">
+            <label>
+                <strong><?php _e('Target Posts:', 'ai-auto-content-generator'); ?></strong><br>
+                <select id="aiacg-batch-status-filter" class="regular-text">
+                    <option value="all"><?php _e('All Generated Posts', 'ai-auto-content-generator'); ?></option>
+                    <option value="publish"><?php _e('Published Posts Only', 'ai-auto-content-generator'); ?></option>
+                    <option value="draft"><?php _e('Draft Posts Only', 'ai-auto-content-generator'); ?></option>
+                    <option value="last_7_days"><?php _e('Last 7 Days', 'ai-auto-content-generator'); ?></option>
+                    <option value="last_30_days"><?php _e('Last 30 Days', 'ai-auto-content-generator'); ?></option>
+                </select>
+            </label>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label>
+                <strong><?php _e('New Status:', 'ai-auto-content-generator'); ?></strong><br>
+                <select id="aiacg-batch-new-status" class="regular-text">
+                    <option value="publish"><?php _e('Publish', 'ai-auto-content-generator'); ?></option>
+                    <option value="draft"><?php _e('Draft', 'ai-auto-content-generator'); ?></option>
+                    <option value="private"><?php _e('Private', 'ai-auto-content-generator'); ?></option>
+                    <option value="pending"><?php _e('Pending Review', 'ai-auto-content-generator'); ?></option>
+                </select>
+            </label>
+        </div>
+
+        <button type="button" class="button button-primary aiacg-batch-update-status">
+            <span class="dashicons dashicons-edit" style="margin-top: 3px;"></span>
+            <?php _e('Update Post Status', 'ai-auto-content-generator'); ?>
+        </button>
+
+        <div id="aiacg-batch-status-progress" style="margin-top: 15px; display: none;">
+            <div class="progress-bar" style="width: 100%; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                <div class="progress-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #46b450 0%, #0073aa 100%); transition: width 0.3s ease;"></div>
+            </div>
+            <p id="aiacg-batch-status-status" style="margin-top: 10px; font-weight: 600;"></p>
+        </div>
+    </div>
+
+    <div class="aiacg-tool-box" style="margin-top: 20px;">
+        <h3><?php _e('Batch Delete Posts', 'ai-auto-content-generator'); ?></h3>
+        <p class="description" style="color: #d63638;">
+            <?php _e('WARNING: This will permanently delete the selected posts and their history records. This action cannot be undone!', 'ai-auto-content-generator'); ?>
+        </p>
+
+        <div style="margin-bottom: 15px;">
+            <label>
+                <strong><?php _e('Delete Posts:', 'ai-auto-content-generator'); ?></strong><br>
+                <select id="aiacg-batch-delete-filter" class="regular-text">
+                    <option value=""><?php _e('— Select —', 'ai-auto-content-generator'); ?></option>
+                    <option value="draft_only"><?php _e('Draft Posts Only', 'ai-auto-content-generator'); ?></option>
+                    <option value="low_quality"><?php _e('Low Quality Posts (Score < 60)', 'ai-auto-content-generator'); ?></option>
+                    <option value="failed"><?php _e('Failed Generation Records', 'ai-auto-content-generator'); ?></option>
+                    <option value="older_than_90"><?php _e('Older than 90 Days', 'ai-auto-content-generator'); ?></option>
+                    <option value="older_than_180"><?php _e('Older than 180 Days', 'ai-auto-content-generator'); ?></option>
+                </select>
+            </label>
+        </div>
+
+        <label style="display: block; margin-bottom: 15px;">
+            <input type="checkbox" id="aiacg-batch-delete-confirm" value="1">
+            <?php _e('I understand this action cannot be undone', 'ai-auto-content-generator'); ?>
+        </label>
+
+        <button type="button" class="button aiacg-batch-delete-posts" style="color: #d63638; border-color: #d63638;" disabled>
+            <span class="dashicons dashicons-trash" style="margin-top: 3px;"></span>
+            <?php _e('Delete Posts', 'ai-auto-content-generator'); ?>
+        </button>
+
+        <div id="aiacg-batch-delete-progress" style="margin-top: 15px; display: none;">
+            <div class="progress-bar" style="width: 100%; height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
+                <div class="progress-fill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #dc3232 0%, #ffb900 100%); transition: width 0.3s ease;"></div>
+            </div>
+            <p id="aiacg-batch-delete-status" style="margin-top: 10px; font-weight: 600;"></p>
+        </div>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
     <h2><?php _e('System Tools', 'ai-auto-content-generator'); ?></h2>
 
     <div class="aiacg-tool-box">
@@ -406,6 +541,175 @@ jQuery(document).ready(function($) {
                 } else {
                     alert('Error: ' + (response.data.message || 'Unknown error'));
                 }
+            }
+        });
+    });
+
+    // ========================================================================
+    // Batch Operations
+    // ========================================================================
+
+    // Enable/disable delete button based on confirmation
+    $('#aiacg-batch-delete-confirm').on('change', function() {
+        $('.aiacg-batch-delete-posts').prop('disabled', !this.checked);
+    });
+
+    // Batch update taxonomy
+    $('.aiacg-batch-update-taxonomy').on('click', function() {
+        var $button = $(this);
+        var $progress = $('#aiacg-batch-taxonomy-progress');
+        var $progressFill = $progress.find('.progress-fill');
+        var $status = $('#aiacg-batch-taxonomy-status');
+
+        var dateFrom = $('#aiacg-batch-date-from').val();
+        var dateTo = $('#aiacg-batch-date-to').val();
+        var categoryId = $('#aiacg-batch-category').val();
+        var tags = $('#aiacg-batch-tags').val();
+
+        if (!categoryId && !tags) {
+            alert('<?php _e('Please select at least one option (category or tags)', 'ai-auto-content-generator'); ?>');
+            return;
+        }
+
+        if (!confirm('<?php _e('This will update categories/tags for all matching generated posts. Continue?', 'ai-auto-content-generator'); ?>')) {
+            return;
+        }
+
+        $button.prop('disabled', true);
+        $progress.show();
+        $progressFill.css('width', '50%');
+        $status.html('<?php _e('Processing...', 'ai-auto-content-generator'); ?>');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_batch_update_taxonomy',
+                nonce: aiacgAdmin.nonce,
+                date_from: dateFrom,
+                date_to: dateTo,
+                category_id: categoryId,
+                tags: tags
+            },
+            success: function(response) {
+                $progressFill.css('width', '100%');
+                if (response.success) {
+                    $status.html('<span style="color: #46b450;">✓ ' + response.data.message + '</span>');
+                    setTimeout(function() {
+                        $progress.hide();
+                        $button.prop('disabled', false);
+                    }, 2000);
+                } else {
+                    $status.html('<span style="color: #dc3232;">✗ ' + (response.data.message || 'Error') + '</span>');
+                    $button.prop('disabled', false);
+                }
+            },
+            error: function() {
+                $status.html('<span style="color: #dc3232;">✗ AJAX error</span>');
+                $button.prop('disabled', false);
+            }
+        });
+    });
+
+    // Batch update status
+    $('.aiacg-batch-update-status').on('click', function() {
+        var $button = $(this);
+        var $progress = $('#aiacg-batch-status-progress');
+        var $progressFill = $progress.find('.progress-fill');
+        var $status = $('#aiacg-batch-status-status');
+
+        var filter = $('#aiacg-batch-status-filter').val();
+        var newStatus = $('#aiacg-batch-new-status').val();
+
+        if (!confirm('<?php _e('This will change the post status for all matching posts. Continue?', 'ai-auto-content-generator'); ?>')) {
+            return;
+        }
+
+        $button.prop('disabled', true);
+        $progress.show();
+        $progressFill.css('width', '50%');
+        $status.html('<?php _e('Processing...', 'ai-auto-content-generator'); ?>');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_batch_update_status',
+                nonce: aiacgAdmin.nonce,
+                filter: filter,
+                new_status: newStatus
+            },
+            success: function(response) {
+                $progressFill.css('width', '100%');
+                if (response.success) {
+                    $status.html('<span style="color: #46b450;">✓ ' + response.data.message + '</span>');
+                    setTimeout(function() {
+                        $progress.hide();
+                        $button.prop('disabled', false);
+                    }, 2000);
+                } else {
+                    $status.html('<span style="color: #dc3232;">✗ ' + (response.data.message || 'Error') + '</span>');
+                    $button.prop('disabled', false);
+                }
+            },
+            error: function() {
+                $status.html('<span style="color: #dc3232;">✗ AJAX error</span>');
+                $button.prop('disabled', false);
+            }
+        });
+    });
+
+    // Batch delete posts
+    $('.aiacg-batch-delete-posts').on('click', function() {
+        var $button = $(this);
+        var $progress = $('#aiacg-batch-delete-progress');
+        var $progressFill = $progress.find('.progress-fill');
+        var $status = $('#aiacg-batch-delete-status');
+
+        var filter = $('#aiacg-batch-delete-filter').val();
+
+        if (!filter) {
+            alert('<?php _e('Please select what to delete', 'ai-auto-content-generator'); ?>');
+            return;
+        }
+
+        if (!confirm('<?php _e('WARNING: This will PERMANENTLY delete posts and records. This action CANNOT be undone! Are you absolutely sure?', 'ai-auto-content-generator'); ?>')) {
+            return;
+        }
+
+        if (!confirm('<?php _e('Last chance! Click OK to proceed with deletion.', 'ai-auto-content-generator'); ?>')) {
+            return;
+        }
+
+        $button.prop('disabled', true);
+        $progress.show();
+        $progressFill.css('width', '50%');
+        $status.html('<?php _e('Deleting...', 'ai-auto-content-generator'); ?>');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_batch_delete_posts',
+                nonce: aiacgAdmin.nonce,
+                filter: filter
+            },
+            success: function(response) {
+                $progressFill.css('width', '100%');
+                if (response.success) {
+                    $status.html('<span style="color: #46b450;">✓ ' + response.data.message + '</span>');
+                    $('#aiacg-batch-delete-confirm').prop('checked', false);
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    $status.html('<span style="color: #dc3232;">✗ ' + (response.data.message || 'Error') + '</span>');
+                    $button.prop('disabled', false);
+                }
+            },
+            error: function() {
+                $status.html('<span style="color: #dc3232;">✗ AJAX error</span>');
+                $button.prop('disabled', false);
             }
         });
     });

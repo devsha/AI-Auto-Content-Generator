@@ -35,6 +35,9 @@ class AIACG_Admin_Settings {
         add_action('wp_ajax_aiacg_trigger_cron_manual', array($this, 'ajax_trigger_cron_manual'));
         add_action('wp_ajax_aiacg_check_api_health', array($this, 'ajax_check_api_health'));
         add_action('wp_ajax_aiacg_run_diagnostics', array($this, 'ajax_run_diagnostics'));
+        add_action('wp_ajax_aiacg_batch_update_taxonomy', array($this, 'ajax_batch_update_taxonomy'));
+        add_action('wp_ajax_aiacg_batch_update_status', array($this, 'ajax_batch_update_status'));
+        add_action('wp_ajax_aiacg_batch_delete_posts', array($this, 'ajax_batch_delete_posts'));
         add_filter('plugin_action_links_' . AIACG_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
     }
 
@@ -1226,6 +1229,236 @@ class AIACG_Admin_Settings {
             'diagnostic' => $full_diagnostic,
             'summary' => $summary,
             'html_report' => $html_report,
+        ));
+    }
+
+    /**
+     * AJAX: 批量更新分类和标签
+     */
+    public function ajax_batch_update_taxonomy() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $date_from = isset($_POST['date_from']) ? sanitize_text_field($_POST['date_from']) : '';
+        $date_to = isset($_POST['date_to']) ? sanitize_text_field($_POST['date_to']) : '';
+        $category_id = isset($_POST['category_id']) ? intval($_POST['category_id']) : 0;
+        $tags = isset($_POST['tags']) ? sanitize_text_field($_POST['tags']) : '';
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . AIACG_Database::TABLE_NAME;
+
+        // 构建查询
+        $where = "status = 'completed' AND post_id > 0";
+        if ($date_from) {
+            $where .= $wpdb->prepare(" AND DATE(generation_time) >= %s", $date_from);
+        }
+        if ($date_to) {
+            $where .= $wpdb->prepare(" AND DATE(generation_time) <= %s", $date_to);
+        }
+
+        $post_ids = $wpdb->get_col("SELECT post_id FROM {$table_name} WHERE {$where}");
+
+        if (empty($post_ids)) {
+            wp_send_json_success(array(
+                'message' => __('No posts found matching the criteria', 'ai-auto-content-generator'),
+                'updated' => 0,
+            ));
+        }
+
+        $updated = 0;
+        foreach ($post_ids as $post_id) {
+            // 更新分类
+            if ($category_id > 0) {
+                wp_set_post_categories($post_id, array($category_id), false);
+            }
+
+            // 添加标签
+            if (!empty($tags)) {
+                $tags_array = array_map('trim', explode(',', $tags));
+                wp_set_post_tags($post_id, $tags_array, true);
+            }
+
+            $updated++;
+        }
+
+        wp_send_json_success(array(
+            'message' => sprintf(__('Updated %d posts successfully', 'ai-auto-content-generator'), $updated),
+            'updated' => $updated,
+        ));
+    }
+
+    /**
+     * AJAX: 批量更新文章状态
+     */
+    public function ajax_batch_update_status() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : 'all';
+        $new_status = isset($_POST['new_status']) ? sanitize_text_field($_POST['new_status']) : 'publish';
+
+        // 验证新状态
+        if (!in_array($new_status, array('publish', 'draft', 'private', 'pending'))) {
+            wp_send_json_error(array('message' => __('Invalid post status', 'ai-auto-content-generator')));
+        }
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . AIACG_Database::TABLE_NAME;
+
+        // 构建查询条件
+        $where = "status = 'completed' AND post_id > 0";
+
+        switch ($filter) {
+            case 'publish':
+                $args = array('post_status' => 'publish');
+                break;
+            case 'draft':
+                $args = array('post_status' => 'draft');
+                break;
+            case 'last_7_days':
+                $where .= " AND generation_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+                $args = array();
+                break;
+            case 'last_30_days':
+                $where .= " AND generation_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+                $args = array();
+                break;
+            default:
+                $args = array();
+        }
+
+        $post_ids = $wpdb->get_col("SELECT post_id FROM {$table_name} WHERE {$where}");
+
+        if (empty($post_ids)) {
+            wp_send_json_success(array(
+                'message' => __('No posts found matching the criteria', 'ai-auto-content-generator'),
+                'updated' => 0,
+            ));
+        }
+
+        // 如果有状态过滤，进一步筛选
+        if (!empty($args['post_status'])) {
+            $filtered_ids = array();
+            foreach ($post_ids as $post_id) {
+                $post = get_post($post_id);
+                if ($post && $post->post_status === $args['post_status']) {
+                    $filtered_ids[] = $post_id;
+                }
+            }
+            $post_ids = $filtered_ids;
+        }
+
+        $updated = 0;
+        foreach ($post_ids as $post_id) {
+            $result = wp_update_post(array(
+                'ID' => $post_id,
+                'post_status' => $new_status,
+            ));
+
+            if ($result && !is_wp_error($result)) {
+                $updated++;
+            }
+        }
+
+        wp_send_json_success(array(
+            'message' => sprintf(__('Updated %d posts to %s', 'ai-auto-content-generator'), $updated, $new_status),
+            'updated' => $updated,
+        ));
+    }
+
+    /**
+     * AJAX: 批量删除文章
+     */
+    public function ajax_batch_delete_posts() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $filter = isset($_POST['filter']) ? sanitize_text_field($_POST['filter']) : '';
+
+        if (empty($filter)) {
+            wp_send_json_error(array('message' => __('No filter specified', 'ai-auto-content-generator')));
+        }
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . AIACG_Database::TABLE_NAME;
+
+        // 构建查询条件
+        $where = "1=1";
+        $delete_posts = true;
+
+        switch ($filter) {
+            case 'draft_only':
+                $where = "status = 'completed' AND post_id > 0";
+                // 需要进一步检查post_status
+                break;
+            case 'low_quality':
+                $where = "status = 'completed' AND post_id > 0 AND quality_score > 0 AND quality_score < 60";
+                break;
+            case 'failed':
+                $where = "status != 'completed'";
+                $delete_posts = false;
+                break;
+            case 'older_than_90':
+                $where = "post_id > 0 AND generation_time < DATE_SUB(NOW(), INTERVAL 90 DAY)";
+                break;
+            case 'older_than_180':
+                $where = "post_id > 0 AND generation_time < DATE_SUB(NOW(), INTERVAL 180 DAY)";
+                break;
+            default:
+                wp_send_json_error(array('message' => __('Invalid filter', 'ai-auto-content-generator')));
+        }
+
+        $records = $wpdb->get_results("SELECT id, post_id FROM {$table_name} WHERE {$where}");
+
+        if (empty($records)) {
+            wp_send_json_success(array(
+                'message' => __('No posts found matching the criteria', 'ai-auto-content-generator'),
+                'deleted' => 0,
+            ));
+        }
+
+        $deleted_posts = 0;
+        $deleted_records = 0;
+
+        foreach ($records as $record) {
+            // 删除WordPress文章
+            if ($delete_posts && $record->post_id > 0) {
+                // 对于draft_only，检查文章状态
+                if ($filter === 'draft_only') {
+                    $post = get_post($record->post_id);
+                    if ($post && $post->post_status !== 'draft') {
+                        continue;
+                    }
+                }
+
+                $result = wp_delete_post($record->post_id, true);
+                if ($result) {
+                    $deleted_posts++;
+                }
+            }
+
+            // 删除历史记录
+            $wpdb->delete($table_name, array('id' => $record->id), array('%d'));
+            $deleted_records++;
+        }
+
+        wp_send_json_success(array(
+            'message' => sprintf(
+                __('Deleted %d posts and %d history records', 'ai-auto-content-generator'),
+                $deleted_posts,
+                $deleted_records
+            ),
+            'deleted_posts' => $deleted_posts,
+            'deleted_records' => $deleted_records,
         ));
     }
 }
