@@ -46,6 +46,17 @@ $statistics = AIACG_Database::get_statistics();
             <div class="aiacg-stat-value"><?php echo esc_html(number_format($statistics['success_rate'], 1)); ?>%</div>
             <div class="aiacg-stat-label"><?php _e('Success Rate', 'ai-auto-content-generator'); ?></div>
         </div>
+        <div class="aiacg-stat-box">
+            <?php
+            global $wpdb;
+            $table_name = $wpdb->prefix . AIACG_Database::TABLE_NAME;
+            $avg_quality = $wpdb->get_var("SELECT AVG(quality_score) FROM {$table_name} WHERE quality_score > 0");
+            $quality_score = $avg_quality ? round($avg_quality) : 0;
+            $quality_class = $quality_score >= 80 ? 'aiacg-status-success' : ($quality_score >= 60 ? 'aiacg-status-pending' : 'aiacg-status-error');
+            ?>
+            <div class="aiacg-stat-value <?php echo $quality_class; ?>"><?php echo esc_html($quality_score); ?></div>
+            <div class="aiacg-stat-label"><?php _e('Avg Quality Score', 'ai-auto-content-generator'); ?></div>
+        </div>
     </div>
 
     <?php if (!empty($statistics['by_api'])): ?>
@@ -79,6 +90,7 @@ $statistics = AIACG_Database::get_statistics();
                 <th><?php _e('Date', 'ai-auto-content-generator'); ?></th>
                 <th><?php _e('Title', 'ai-auto-content-generator'); ?></th>
                 <th><?php _e('Status', 'ai-auto-content-generator'); ?></th>
+                <th><?php _e('Quality', 'ai-auto-content-generator'); ?></th>
                 <th><?php _e('API', 'ai-auto-content-generator'); ?></th>
                 <th><?php _e('Words', 'ai-auto-content-generator'); ?></th>
                 <th><?php _e('Tokens', 'ai-auto-content-generator'); ?></th>
@@ -104,6 +116,7 @@ $statistics = AIACG_Database::get_statistics();
                     $status_class = '';
                     $status_label = '';
                     switch ($record->status) {
+                        case 'completed':
                         case 'success':
                             $status_class = 'aiacg-status-success';
                             $status_label = __('Success', 'ai-auto-content-generator');
@@ -117,6 +130,20 @@ $statistics = AIACG_Database::get_statistics();
                             $status_label = ucfirst($record->status);
                     }
                     echo '<span class="' . esc_attr($status_class) . '">' . esc_html($status_label) . '</span>';
+                    ?>
+                </td>
+                <td>
+                    <?php
+                    if (isset($record->quality_score) && $record->quality_score > 0) {
+                        $quality_score = intval($record->quality_score);
+                        $score_class = $quality_score >= 80 ? 'score-high' : ($quality_score >= 60 ? 'score-medium' : 'score-low');
+                        $grade = AIACG_Content_Quality::get_quality_grade($quality_score);
+                        echo '<span class="quality-badge ' . esc_attr($score_class) . '" title="' . esc_attr($grade) . '">';
+                        echo esc_html($quality_score);
+                        echo '</span>';
+                    } else {
+                        echo '<span style="color: #999;">-</span>';
+                    }
                     ?>
                 </td>
                 <td><?php echo esc_html(ucfirst($record->api_used)); ?></td>
@@ -134,7 +161,7 @@ $statistics = AIACG_Database::get_statistics();
             </tr>
             <?php if ($record->status === 'failed' && !empty($record->error_message)): ?>
             <tr class="aiacg-error-row">
-                <td colspan="8">
+                <td colspan="9">
                     <strong><?php _e('Error:', 'ai-auto-content-generator'); ?></strong>
                     <?php echo esc_html($record->error_message); ?>
                 </td>

@@ -28,6 +28,8 @@ class AIACG_Admin_Settings {
         add_action('wp_ajax_aiacg_cleanup_records', array($this, 'ajax_cleanup_records'));
         add_action('wp_ajax_aiacg_reset_stats', array($this, 'ajax_reset_stats'));
         add_action('wp_ajax_aiacg_reset_plugin', array($this, 'ajax_reset_plugin'));
+        add_action('wp_ajax_aiacg_export_history_csv', array($this, 'ajax_export_history_csv'));
+        add_action('wp_ajax_aiacg_reevaluate_quality', array($this, 'ajax_reevaluate_quality'));
         add_filter('plugin_action_links_' . AIACG_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
     }
 
@@ -432,6 +434,81 @@ class AIACG_Admin_Settings {
                         </label>
                     </td>
                 </tr>
+
+                <tr>
+                    <th colspan="2"><h2><?php _e('Budget Control (v1.1.0)', 'ai-auto-content-generator'); ?></h2></th>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_daily_budget_limit"><?php _e('Daily Budget Limit ($)', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <input type="number" id="aiacg_daily_budget_limit" name="aiacg_daily_budget_limit"
+                               value="<?php echo esc_attr(get_option('aiacg_daily_budget_limit', 0)); ?>"
+                               min="0" max="1000" step="0.01" style="width: 150px;">
+                        <p class="description">
+                            <?php _e('Maximum daily spending on API calls (0 = no limit). Generation will stop when limit reached.', 'ai-auto-content-generator'); ?>
+                        </p>
+                        <?php
+                        $daily_status = AIACG_Budget_Manager::get_period_cost('today');
+                        $daily_limit = get_option('aiacg_daily_budget_limit', 0);
+                        if ($daily_limit > 0) {
+                            $daily_percentage = ($daily_status / $daily_limit) * 100;
+                            $status_class = $daily_percentage >= 80 ? 'error' : ($daily_percentage >= 60 ? 'warning' : 'success');
+                            echo '<p class="description"><strong>' . __('Today:', 'ai-auto-content-generator') . '</strong> $' . number_format($daily_status, 2) . ' / $' . number_format($daily_limit, 2) . ' (' . number_format($daily_percentage, 1) . '%) <span class="aiacg-status-' . $status_class . '">●</span></p>';
+                        } else {
+                            echo '<p class="description"><strong>' . __('Today:', 'ai-auto-content-generator') . '</strong> $' . number_format($daily_status, 2) . ' <span class="aiacg-status-success">●</span></p>';
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_monthly_budget_limit"><?php _e('Monthly Budget Limit ($)', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <input type="number" id="aiacg_monthly_budget_limit" name="aiacg_monthly_budget_limit"
+                               value="<?php echo esc_attr(get_option('aiacg_monthly_budget_limit', 0)); ?>"
+                               min="0" max="10000" step="0.01" style="width: 150px;">
+                        <p class="description">
+                            <?php _e('Maximum monthly spending on API calls (0 = no limit). Generation will stop when limit reached.', 'ai-auto-content-generator'); ?>
+                        </p>
+                        <?php
+                        $monthly_status = AIACG_Budget_Manager::get_period_cost('month');
+                        $monthly_limit = get_option('aiacg_monthly_budget_limit', 0);
+                        if ($monthly_limit > 0) {
+                            $monthly_percentage = ($monthly_status / $monthly_limit) * 100;
+                            $status_class = $monthly_percentage >= 80 ? 'error' : ($monthly_percentage >= 60 ? 'warning' : 'success');
+                            echo '<p class="description"><strong>' . __('This Month:', 'ai-auto-content-generator') . '</strong> $' . number_format($monthly_status, 2) . ' / $' . number_format($monthly_limit, 2) . ' (' . number_format($monthly_percentage, 1) . '%) <span class="aiacg-status-' . $status_class . '">●</span></p>';
+                        } else {
+                            echo '<p class="description"><strong>' . __('This Month:', 'ai-auto-content-generator') . '</strong> $' . number_format($monthly_status, 2) . ' <span class="aiacg-status-success">●</span></p>';
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_email_on_budget_warning"><?php _e('Budget Warning Email', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <label>
+                            <input type="checkbox" id="aiacg_email_on_budget_warning" name="aiacg_email_on_budget_warning" value="1"
+                                   <?php checked(get_option('aiacg_email_on_budget_warning', false)); ?>>
+                            <?php _e('Send email alert when budget threshold is reached', 'ai-auto-content-generator'); ?>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_budget_warning_threshold"><?php _e('Warning Threshold (%)', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <input type="number" id="aiacg_budget_warning_threshold" name="aiacg_budget_warning_threshold"
+                               value="<?php echo esc_attr(get_option('aiacg_budget_warning_threshold', 80)); ?>"
+                               min="50" max="95" step="5" style="width: 100px;">
+                        <p class="description"><?php _e('Send warning when budget reaches this percentage (default: 80%)', 'ai-auto-content-generator'); ?></p>
+                    </td>
+                </tr>
             </table>
             <?php submit_button(); ?>
         </form>
@@ -754,6 +831,171 @@ class AIACG_Admin_Settings {
 
         wp_send_json_success(array(
             'message' => __('Plugin has been reset to defaults', 'ai-auto-content-generator')
+        ));
+    }
+
+    /**
+     * AJAX: 导出历史记录为CSV
+     */
+    public function ajax_export_history_csv() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Permission denied', 'ai-auto-content-generator'));
+        }
+
+        // 获取所有历史记录
+        $history = AIACG_Database::get_history(array(
+            'limit' => 10000, // 获取大量记录
+            'offset' => 0,
+        ));
+
+        // 设置CSV header
+        $filename = 'aiacg-history-' . date('Y-m-d-His') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        // 创建输出流
+        $output = fopen('php://output', 'w');
+
+        // 添加BOM以支持Excel正确显示UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        // 写入CSV表头
+        fputcsv($output, array(
+            __('ID', 'ai-auto-content-generator'),
+            __('Date', 'ai-auto-content-generator'),
+            __('Title', 'ai-auto-content-generator'),
+            __('Post ID', 'ai-auto-content-generator'),
+            __('Topic', 'ai-auto-content-generator'),
+            __('Status', 'ai-auto-content-generator'),
+            __('Quality Score', 'ai-auto-content-generator'),
+            __('Quality Grade', 'ai-auto-content-generator'),
+            __('API Used', 'ai-auto-content-generator'),
+            __('Word Count', 'ai-auto-content-generator'),
+            __('Tokens', 'ai-auto-content-generator'),
+            __('Cost', 'ai-auto-content-generator'),
+            __('Writing Angle', 'ai-auto-content-generator'),
+            __('Similarity Score', 'ai-auto-content-generator'),
+            __('Error Message', 'ai-auto-content-generator'),
+        ));
+
+        // 写入数据行
+        foreach ($history as $record) {
+            $quality_grade = '';
+            if (isset($record->quality_score) && $record->quality_score > 0) {
+                $quality_grade = AIACG_Content_Quality::get_quality_grade($record->quality_score);
+            }
+
+            fputcsv($output, array(
+                $record->id,
+                $record->generation_time,
+                $record->generated_title,
+                $record->post_id ? $record->post_id : '',
+                $record->topic,
+                $record->status,
+                isset($record->quality_score) ? $record->quality_score : '',
+                $quality_grade,
+                ucfirst($record->api_used),
+                $record->word_count,
+                $record->tokens_used,
+                $record->cost_estimate,
+                $record->writing_angle,
+                $record->similarity_score,
+                $record->error_message,
+            ));
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    /**
+     * AJAX: 批量重新评估质量分数
+     */
+    public function ajax_reevaluate_quality() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        global $wpdb;
+        $table_name = $wpdb->prefix . AIACG_Database::TABLE_NAME;
+
+        // 获取所有需要重新评估的记录（quality_score = 0 或 NULL，且状态为 completed）
+        $records = $wpdb->get_results(
+            "SELECT id, post_id, generated_title FROM {$table_name}
+             WHERE (quality_score = 0 OR quality_score IS NULL)
+             AND status = 'completed'
+             AND post_id > 0
+             LIMIT 100"
+        );
+
+        if (empty($records)) {
+            wp_send_json_success(array(
+                'message' => __('No posts need quality re-evaluation', 'ai-auto-content-generator'),
+                'processed' => 0,
+                'remaining' => 0,
+            ));
+        }
+
+        $processed = 0;
+        $errors = array();
+
+        foreach ($records as $record) {
+            $post = get_post($record->post_id);
+
+            if (!$post) {
+                $errors[] = sprintf(__('Post #%d not found', 'ai-auto-content-generator'), $record->post_id);
+                continue;
+            }
+
+            // 评估质量
+            $quality_evaluation = AIACG_Content_Quality::evaluate($post->post_title, $post->post_content);
+
+            // 更新数据库
+            $updated = $wpdb->update(
+                $table_name,
+                array('quality_score' => $quality_evaluation['overall_score']),
+                array('id' => $record->id),
+                array('%d'),
+                array('%d')
+            );
+
+            if ($updated !== false) {
+                $processed++;
+            } else {
+                $errors[] = sprintf(__('Failed to update record #%d', 'ai-auto-content-generator'), $record->id);
+            }
+        }
+
+        // 检查是否还有剩余记录
+        $remaining = $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$table_name}
+             WHERE (quality_score = 0 OR quality_score IS NULL)
+             AND status = 'completed'
+             AND post_id > 0"
+        );
+
+        $message = sprintf(
+            __('Processed %d posts. %d remaining.', 'ai-auto-content-generator'),
+            $processed,
+            $remaining
+        );
+
+        if (!empty($errors)) {
+            $message .= ' ' . __('Some errors occurred:', 'ai-auto-content-generator') . ' ' . implode('; ', $errors);
+        }
+
+        wp_send_json_success(array(
+            'message' => $message,
+            'processed' => $processed,
+            'remaining' => intval($remaining),
+            'errors' => $errors,
         ));
     }
 }

@@ -284,6 +284,46 @@
         });
 
         /**
+         * Export History CSV
+         */
+        $('.aiacg-export-history-csv').on('click', function(e) {
+            e.preventDefault();
+
+            var $button = $(this);
+            var originalText = $button.text();
+
+            $button.prop('disabled', true).text('Exporting...');
+
+            // Create form and submit
+            var form = $('<form>', {
+                'method': 'POST',
+                'action': aiacgAdmin.ajaxUrl
+            });
+
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': 'action',
+                'value': 'aiacg_export_history_csv'
+            }));
+
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': 'nonce',
+                'value': aiacgAdmin.nonce
+            }));
+
+            $('body').append(form);
+            form.submit();
+            form.remove();
+
+            // Re-enable button
+            setTimeout(function() {
+                $button.prop('disabled', false).text(originalText);
+                showNotice('success', 'CSV export initiated. Download should start automatically.');
+            }, 1000);
+        });
+
+        /**
          * Expandable sections
          */
         $('.aiacg-expandable-header').on('click', function() {
