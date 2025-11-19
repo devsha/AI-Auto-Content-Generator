@@ -288,11 +288,11 @@ class AIACG_API_Health_Monitor {
             }
         }
 
-        $overall_status = 'healthy';
+        $overall_status = 'good';
         if ($has_error && $healthy_count === 0) {
             $overall_status = 'critical';
         } elseif ($has_error) {
-            $overall_status = 'degraded';
+            $overall_status = 'warning';
         } elseif ($has_warning) {
             $overall_status = 'warning';
         }

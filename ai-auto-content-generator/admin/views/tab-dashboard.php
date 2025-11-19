@@ -210,8 +210,8 @@ $api_health_summary = AIACG_API_Health_Monitor::get_health_summary();
                 <div class="api-health-overall <?php echo esc_attr($overall_status_class); ?>">
                     <?php
                     $status_icons = array(
-                        'healthy' => '✓',
-                        'degraded' => '⚠',
+                        'good' => '✓',
+                        'warning' => '⚠',
                         'critical' => '✗',
                         'not_configured' => '○',
                     );
@@ -221,9 +221,9 @@ $api_health_summary = AIACG_API_Health_Monitor::get_health_summary();
 
                     echo '<span class="status-icon">' . $status_icon . '</span>';
 
-                    if ($api_health_summary['overall_status'] === 'healthy') {
+                    if ($api_health_summary['overall_status'] === 'good') {
                         _e('All Systems Operational', 'ai-auto-content-generator');
-                    } elseif ($api_health_summary['overall_status'] === 'degraded') {
+                    } elseif ($api_health_summary['overall_status'] === 'warning') {
                         _e('Partial Service Disruption', 'ai-auto-content-generator');
                     } elseif ($api_health_summary['overall_status'] === 'critical') {
                         _e('Service Disruption', 'ai-auto-content-generator');
@@ -268,7 +268,7 @@ $api_health_summary = AIACG_API_Health_Monitor::get_health_summary();
                                         echo '○ ' . __('Not Configured', 'ai-auto-content-generator');
                                     }
                                     ?>
-                                </status-badge>
+                                </span>
                                 <?php if (isset($api_result['response_time']) && $api_result['response_time'] > 0): ?>
                                     <span class="response-time"><?php echo esc_html($api_result['response_time']); ?>ms</span>
                                 <?php endif; ?>
@@ -294,12 +294,12 @@ $api_health_summary = AIACG_API_Health_Monitor::get_health_summary();
     <div class="aiacg-charts-section">
         <div class="chart-container">
             <h3><?php _e('7-Day Generation Trend', 'ai-auto-content-generator'); ?></h3>
-            <canvas id="aiacg-trend-chart" data-stats='<?php echo json_encode($daily_stats); ?>'></canvas>
+            <canvas id="aiacg-trend-chart" data-stats='<?php echo esc_attr(json_encode($daily_stats)); ?>'></canvas>
         </div>
 
         <div class="chart-container">
             <h3><?php _e('API Usage Distribution', 'ai-auto-content-generator'); ?></h3>
-            <canvas id="aiacg-api-chart" data-stats='<?php echo json_encode($api_usage); ?>'></canvas>
+            <canvas id="aiacg-api-chart" data-stats='<?php echo esc_attr(json_encode($api_usage)); ?>'></canvas>
         </div>
     </div>
 

@@ -134,24 +134,33 @@ class AIACG_System_Diagnostics {
 
         // 检查表是否存在
         $table_name = $wpdb->prefix . AIACG_Database::TABLE_NAME;
-        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name;
+        $table_exists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name)) === $table_name;
 
         if (!$table_exists) {
             $issues[] = __('Plugin database table is missing. Please deactivate and reactivate the plugin.', 'ai-auto-content-generator');
         } else {
-            // 检查表大小
-            $table_size = $wpdb->get_var("SELECT
+            // 检查表大小（使用错误抑制，因为某些主机可能限制访问information_schema）
+            $table_size = 0;
+            $suppress_errors = $wpdb->suppress_errors(true);
+            $table_size_result = $wpdb->get_var($wpdb->prepare("SELECT
                 ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS size_mb
                 FROM information_schema.TABLES
-                WHERE TABLE_SCHEMA = '{$wpdb->dbname}'
-                AND TABLE_NAME = '{$table_name}'");
+                WHERE TABLE_SCHEMA = %s
+                AND TABLE_NAME = %s",
+                $wpdb->dbname,
+                $table_name
+            ));
+            $wpdb->suppress_errors($suppress_errors);
 
-            if ($table_size > 100) {
-                $warnings[] = sprintf(__('Database table is large (%.2f MB). Consider cleanup.', 'ai-auto-content-generator'), $table_size);
+            if ($table_size_result !== null) {
+                $table_size = floatval($table_size_result);
+                if ($table_size > 100) {
+                    $warnings[] = sprintf(__('Database table is large (%.2f MB). Consider cleanup.', 'ai-auto-content-generator'), $table_size);
+                }
             }
 
             // 检查记录数
-            $record_count = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");
+            $record_count = intval($wpdb->get_var("SELECT COUNT(*) FROM {$table_name}"));
             if ($record_count > 10000) {
                 $warnings[] = sprintf(__('Large number of history records (%d). Consider cleanup.', 'ai-auto-content-generator'), $record_count);
             }

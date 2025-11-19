@@ -1432,10 +1432,21 @@ class AIACG_Admin_Settings {
         foreach ($records as $record) {
             // 删除WordPress文章
             if ($delete_posts && $record->post_id > 0) {
+                $post = get_post($record->post_id);
+
                 // 对于draft_only，检查文章状态
                 if ($filter === 'draft_only') {
-                    $post = get_post($record->post_id);
                     if ($post && $post->post_status !== 'draft') {
+                        continue;
+                    }
+                }
+
+                // 对于older_than类型，只删除草稿，避免误删发布的内容
+                if (in_array($filter, array('older_than_90', 'older_than_180'))) {
+                    if ($post && $post->post_status !== 'draft') {
+                        // 只删除历史记录，不删除已发布的文章
+                        $wpdb->delete($table_name, array('id' => $record->id), array('%d'));
+                        $deleted_records++;
                         continue;
                     }
                 }

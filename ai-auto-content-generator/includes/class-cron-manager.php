@@ -22,11 +22,23 @@ class AIACG_Cron_Manager {
         $generation_time = get_option('aiacg_generation_time', '08:00');
         list($hour, $minute) = explode(':', $generation_time);
 
+        // 计算相对时间（正确处理过去和未来）
+        $next_run_relative = '';
+        if ($next_run) {
+            $current_time = current_time('timestamp');
+            $time_diff = human_time_diff($next_run, $current_time);
+            if ($next_run < $current_time) {
+                $next_run_relative = sprintf(__('%s ago', 'ai-auto-content-generator'), $time_diff);
+            } else {
+                $next_run_relative = $time_diff;
+            }
+        }
+
         return array(
             'enabled' => $is_enabled,
             'next_run' => $next_run,
             'next_run_formatted' => $next_run ? date('Y-m-d H:i:s', $next_run) : '',
-            'next_run_relative' => $next_run ? human_time_diff($next_run, current_time('timestamp')) : '',
+            'next_run_relative' => $next_run_relative,
             'scheduled_time' => $generation_time,
             'is_past_due' => $next_run && $next_run < current_time('timestamp'),
             'last_execution' => get_option('aiacg_last_generation_time', ''),

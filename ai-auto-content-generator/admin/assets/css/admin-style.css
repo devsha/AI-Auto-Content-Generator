@@ -815,10 +815,12 @@
     font-weight: 600;
 }
 
+.api-health-overall.status-good,
 .api-health-overall.status-healthy {
     color: #155724;
 }
 
+.api-health-overall.status-warning,
 .api-health-overall.status-degraded {
     color: #856404;
 }
