@@ -596,3 +596,320 @@
         max-height: 200px;
     }
 }
+
+/* Cron Job Status Section (v1.1.1) */
+.aiacg-cron-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.aiacg-cron-section h2 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.cron-status-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f9f9f9;
+}
+
+.cron-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.cron-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+}
+
+.cron-status-indicator .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.cron-status-indicator.status-enabled .status-dot {
+    background: #46b450;
+    box-shadow: 0 0 8px rgba(70, 180, 80, 0.5);
+    animation: pulse 2s infinite;
+}
+
+.cron-status-indicator.status-disabled .status-dot {
+    background: #999;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.cron-health {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.cron-health.health-good {
+    background: #d4edda;
+    color: #155724;
+}
+
+.cron-health.health-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.cron-health.health-critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.cron-details {
+    margin: 20px 0;
+}
+
+.cron-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.cron-detail-item:last-child {
+    border-bottom: none;
+}
+
+.cron-detail-item .detail-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.cron-detail-item .detail-value {
+    color: #333;
+}
+
+.cron-detail-item .detail-value small {
+    color: #999;
+    margin-left: 8px;
+}
+
+.cron-alerts {
+    margin: 20px 0;
+}
+
+.cron-alerts .alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.cron-alerts .alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3232;
+}
+
+.cron-alerts .alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffb900;
+}
+
+.cron-alerts .alert .dashicons {
+    flex-shrink: 0;
+}
+
+.cron-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.cron-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cron-actions .button .dashicons {
+    margin-top: 2px;
+}
+
+@media screen and (max-width: 768px) {
+    .cron-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .cron-detail-item {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .cron-actions {
+        flex-direction: column;
+    }
+
+    .cron-actions .button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* API Health Status Section (v1.1.1) */
+.aiacg-api-health-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.aiacg-api-health-section h2 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.api-health-card {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f9f9f9;
+}
+
+.api-health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.api-health-overall {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.api-health-overall.status-healthy {
+    color: #155724;
+}
+
+.api-health-overall.status-degraded {
+    color: #856404;
+}
+
+.api-health-overall.status-critical {
+    color: #721c24;
+}
+
+.api-health-overall.status-not_configured {
+    color: #999;
+}
+
+.api-health-overall .status-icon {
+    font-size: 24px;
+}
+
+.api-health-summary {
+    color: #666;
+    font-size: 14px;
+}
+
+.api-health-details {
+    margin: 20px 0;
+}
+
+.api-health-item {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    border-left: 4px solid;
+}
+
+.api-health-item.status-healthy {
+    background: #d4edda;
+    border-left-color: #46b450;
+}
+
+.api-health-item.status-error {
+    background: #f8d7da;
+    border-left-color: #dc3232;
+}
+
+.api-health-item.status-not_configured {
+    background: #f0f0f0;
+    border-left-color: #999;
+}
+
+.api-health-item .api-name {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 15px;
+}
+
+.api-health-item .api-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.api-health-item .status-badge {
+    font-weight: 600;
+}
+
+.api-health-item .response-time {
+    color: #666;
+    background: rgba(255,255,255,0.7);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.api-health-item .api-message {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+    padding: 8px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 4px;
+}
+
+.api-health-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .api-health-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}

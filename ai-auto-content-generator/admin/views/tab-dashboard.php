@@ -19,6 +19,13 @@ $recent_posts = AIACG_Database::get_history(array('limit' => 10));
 $api_usage = AIACG_Database::get_api_usage_stats();
 $daily_stats = AIACG_Database::get_daily_stats(7); // Last 7 days
 $budget_status = AIACG_Budget_Manager::get_budget_status();
+
+// Get cron status
+$cron_status = AIACG_Cron_Manager::get_cron_status();
+$cron_health = AIACG_Cron_Manager::health_check();
+
+// Get API health
+$api_health_summary = AIACG_API_Health_Monitor::get_health_summary();
 ?>
 
 <div class="aiacg-dashboard">
@@ -87,6 +94,198 @@ $budget_status = AIACG_Budget_Manager::get_budget_status();
                         (<?php echo esc_html(number_format($budget_status['monthly_percentage'], 1)); ?>%)
                     </p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cron Job Status -->
+    <div class="aiacg-cron-section">
+        <h2><?php _e('Automatic Generation Status', 'ai-auto-content-generator'); ?></h2>
+        <div class="cron-status-card" id="aiacg-cron-status-card">
+            <?php
+            $status_class = $cron_status['enabled'] ? 'status-enabled' : 'status-disabled';
+            $health_class = 'health-' . $cron_health['status']; // good, warning, critical
+            ?>
+            <div class="cron-header">
+                <div class="cron-status-indicator <?php echo esc_attr($status_class); ?>">
+                    <span class="status-dot"></span>
+                    <?php if ($cron_status['enabled']): ?>
+                        <strong><?php _e('Enabled', 'ai-auto-content-generator'); ?></strong>
+                    <?php else: ?>
+                        <strong><?php _e('Disabled', 'ai-auto-content-generator'); ?></strong>
+                    <?php endif; ?>
+                </div>
+                <div class="cron-health <?php echo esc_attr($health_class); ?>">
+                    <?php
+                    if ($cron_health['status'] === 'good') {
+                        echo '✓ ' . __('Healthy', 'ai-auto-content-generator');
+                    } elseif ($cron_health['status'] === 'warning') {
+                        echo '⚠ ' . __('Warning', 'ai-auto-content-generator');
+                    } else {
+                        echo '✗ ' . __('Issues Detected', 'ai-auto-content-generator');
+                    }
+                    ?>
+                </div>
+            </div>
+
+            <div class="cron-details">
+                <?php if ($cron_status['enabled']): ?>
+                    <div class="cron-detail-item">
+                        <span class="detail-label"><?php _e('Next Run:', 'ai-auto-content-generator'); ?></span>
+                        <span class="detail-value">
+                            <?php echo esc_html($cron_status['next_run_formatted']); ?>
+                            <small>(<?php
+                            if ($cron_status['is_past_due']) {
+                                echo __('Past due!', 'ai-auto-content-generator');
+                            } else {
+                                printf(__('in %s', 'ai-auto-content-generator'), $cron_status['next_run_relative']);
+                            }
+                            ?>)</small>
+                        </span>
+                    </div>
+                <?php endif; ?>
+
+                <div class="cron-detail-item">
+                    <span class="detail-label"><?php _e('Scheduled Time:', 'ai-auto-content-generator'); ?></span>
+                    <span class="detail-value"><?php echo esc_html($cron_status['scheduled_time']); ?></span>
+                </div>
+
+                <?php if ($cron_status['last_execution']): ?>
+                    <div class="cron-detail-item">
+                        <span class="detail-label"><?php _e('Last Execution:', 'ai-auto-content-generator'); ?></span>
+                        <span class="detail-value"><?php echo esc_html($cron_status['last_execution']); ?></span>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($cron_health['issues']) || !empty($cron_health['warnings'])): ?>
+                <div class="cron-alerts">
+                    <?php foreach ($cron_health['issues'] as $issue): ?>
+                        <div class="alert alert-error">
+                            <span class="dashicons dashicons-warning"></span>
+                            <?php echo esc_html($issue); ?>
+                        </div>
+                    <?php endforeach; ?>
+                    <?php foreach ($cron_health['warnings'] as $warning): ?>
+                        <div class="alert alert-warning">
+                            <span class="dashicons dashicons-info"></span>
+                            <?php echo esc_html($warning); ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="cron-actions">
+                <?php if ($cron_status['enabled']): ?>
+                    <button type="button" class="button aiacg-toggle-cron" data-action="disable">
+                        <span class="dashicons dashicons-no"></span>
+                        <?php _e('Disable Auto-Generation', 'ai-auto-content-generator'); ?>
+                    </button>
+                    <button type="button" class="button button-secondary aiacg-trigger-cron">
+                        <span class="dashicons dashicons-controls-play"></span>
+                        <?php _e('Run Now', 'ai-auto-content-generator'); ?>
+                    </button>
+                <?php else: ?>
+                    <button type="button" class="button button-primary aiacg-toggle-cron" data-action="enable">
+                        <span class="dashicons dashicons-yes"></span>
+                        <?php _e('Enable Auto-Generation', 'ai-auto-content-generator'); ?>
+                    </button>
+                <?php endif; ?>
+                <button type="button" class="button button-secondary aiacg-refresh-cron-status">
+                    <span class="dashicons dashicons-update"></span>
+                    <?php _e('Refresh Status', 'ai-auto-content-generator'); ?>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Health Status -->
+    <div class="aiacg-api-health-section">
+        <h2><?php _e('API Health Status', 'ai-auto-content-generator'); ?></h2>
+        <div class="api-health-card" id="aiacg-api-health-card">
+            <?php
+            $overall_status_class = 'status-' . $api_health_summary['overall_status'];
+            ?>
+            <div class="api-health-header">
+                <div class="api-health-overall <?php echo esc_attr($overall_status_class); ?>">
+                    <?php
+                    $status_icons = array(
+                        'healthy' => '✓',
+                        'degraded' => '⚠',
+                        'critical' => '✗',
+                        'not_configured' => '○',
+                    );
+                    $status_icon = isset($status_icons[$api_health_summary['overall_status']])
+                        ? $status_icons[$api_health_summary['overall_status']]
+                        : '?';
+
+                    echo '<span class="status-icon">' . $status_icon . '</span>';
+
+                    if ($api_health_summary['overall_status'] === 'healthy') {
+                        _e('All Systems Operational', 'ai-auto-content-generator');
+                    } elseif ($api_health_summary['overall_status'] === 'degraded') {
+                        _e('Partial Service Disruption', 'ai-auto-content-generator');
+                    } elseif ($api_health_summary['overall_status'] === 'critical') {
+                        _e('Service Disruption', 'ai-auto-content-generator');
+                    } else {
+                        _e('No APIs Configured', 'ai-auto-content-generator');
+                    }
+                    ?>
+                </div>
+                <div class="api-health-summary">
+                    <?php
+                    printf(
+                        __('%d of %d APIs Healthy', 'ai-auto-content-generator'),
+                        $api_health_summary['healthy_count'],
+                        $api_health_summary['total_count']
+                    );
+                    ?>
+                </div>
+            </div>
+
+            <?php if (!empty($api_health_summary['api_results'])): ?>
+                <div class="api-health-details">
+                    <?php foreach ($api_health_summary['api_results'] as $api_name => $api_result): ?>
+                        <div class="api-health-item status-<?php echo esc_attr($api_result['status']); ?>">
+                            <div class="api-name">
+                                <?php
+                                $api_labels = array(
+                                    'gemini' => 'Google Gemini',
+                                    'deepseek' => 'DeepSeek',
+                                    'openai' => 'OpenAI',
+                                );
+                                echo esc_html($api_labels[$api_name] ?? ucfirst($api_name));
+                                ?>
+                            </div>
+                            <div class="api-status">
+                                <span class="status-badge">
+                                    <?php
+                                    if ($api_result['status'] === 'healthy') {
+                                        echo '✓ ' . __('Healthy', 'ai-auto-content-generator');
+                                    } elseif ($api_result['status'] === 'error') {
+                                        echo '✗ ' . __('Error', 'ai-auto-content-generator');
+                                    } else {
+                                        echo '○ ' . __('Not Configured', 'ai-auto-content-generator');
+                                    }
+                                    ?>
+                                </status-badge>
+                                <?php if (isset($api_result['response_time']) && $api_result['response_time'] > 0): ?>
+                                    <span class="response-time"><?php echo esc_html($api_result['response_time']); ?>ms</span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if (!empty($api_result['message']) && $api_result['status'] !== 'healthy'): ?>
+                                <div class="api-message"><?php echo esc_html($api_result['message']); ?></div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="api-health-actions">
+                <button type="button" class="button button-secondary aiacg-refresh-api-health">
+                    <span class="dashicons dashicons-update"></span>
+                    <?php _e('Refresh API Health', 'ai-auto-content-generator'); ?>
+                </button>
             </div>
         </div>
     </div>

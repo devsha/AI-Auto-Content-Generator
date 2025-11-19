@@ -30,6 +30,10 @@ class AIACG_Admin_Settings {
         add_action('wp_ajax_aiacg_reset_plugin', array($this, 'ajax_reset_plugin'));
         add_action('wp_ajax_aiacg_export_history_csv', array($this, 'ajax_export_history_csv'));
         add_action('wp_ajax_aiacg_reevaluate_quality', array($this, 'ajax_reevaluate_quality'));
+        add_action('wp_ajax_aiacg_toggle_cron', array($this, 'ajax_toggle_cron'));
+        add_action('wp_ajax_aiacg_get_cron_status', array($this, 'ajax_get_cron_status'));
+        add_action('wp_ajax_aiacg_trigger_cron_manual', array($this, 'ajax_trigger_cron_manual'));
+        add_action('wp_ajax_aiacg_check_api_health', array($this, 'ajax_check_api_health'));
         add_filter('plugin_action_links_' . AIACG_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
     }
 
@@ -996,6 +1000,93 @@ class AIACG_Admin_Settings {
             'processed' => $processed,
             'remaining' => intval($remaining),
             'errors' => $errors,
+        ));
+    }
+
+    /**
+     * AJAX: 切换定时任务状态
+     */
+    public function ajax_toggle_cron() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $action = isset($_POST['cron_action']) ? sanitize_text_field($_POST['cron_action']) : '';
+
+        if ($action === 'enable') {
+            $result = AIACG_Cron_Manager::enable_cron();
+        } elseif ($action === 'disable') {
+            $result = AIACG_Cron_Manager::disable_cron();
+        } else {
+            wp_send_json_error(array('message' => __('Invalid action', 'ai-auto-content-generator')));
+            return;
+        }
+
+        if ($result['success']) {
+            $status = AIACG_Cron_Manager::get_cron_status();
+            wp_send_json_success(array(
+                'message' => $result['message'],
+                'status' => $status,
+            ));
+        } else {
+            wp_send_json_error(array('message' => $result['message']));
+        }
+    }
+
+    /**
+     * AJAX: 获取定时任务状态
+     */
+    public function ajax_get_cron_status() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $status = AIACG_Cron_Manager::get_cron_status();
+        $health = AIACG_Cron_Manager::health_check();
+
+        wp_send_json_success(array(
+            'status' => $status,
+            'health' => $health,
+        ));
+    }
+
+    /**
+     * AJAX: 手动触发定时任务
+     */
+    public function ajax_trigger_cron_manual() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $result = AIACG_Cron_Manager::manual_trigger();
+
+        wp_send_json_success(array(
+            'message' => $result['message'],
+        ));
+    }
+
+    /**
+     * AJAX: 检查API健康状态
+     */
+    public function ajax_check_api_health() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $summary = AIACG_API_Health_Monitor::get_health_summary();
+        $avg_response_time = AIACG_API_Health_Monitor::get_average_response_time();
+
+        wp_send_json_success(array(
+            'summary' => $summary,
+            'avg_response_time' => $avg_response_time,
         ));
     }
 }

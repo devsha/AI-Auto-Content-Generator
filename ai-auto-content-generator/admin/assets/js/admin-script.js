@@ -490,4 +490,163 @@
     // Helper: Get admin URL
     var adminUrl = window.location.origin + '/wp-admin/';
 
+    // ========================================================================
+    // Cron Job Management (v1.1.1)
+    // ========================================================================
+
+    // Toggle cron job (enable/disable)
+    $(document).on('click', '.aiacg-toggle-cron', function() {
+        var $button = $(this);
+        var action = $button.data('action');
+        var actionText = action === 'enable' ? 'enable' : 'disable';
+
+        if (!confirm(action === 'enable'
+            ? 'Are you sure you want to enable automatic generation?'
+            : 'Are you sure you want to disable automatic generation?')) {
+            return;
+        }
+
+        $button.prop('disabled', true);
+
+        $.ajax({
+            url: aiacgAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_toggle_cron',
+                cron_action: actionText,
+                nonce: aiacgAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotice('success', response.data.message);
+                    // Reload page to update UI
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showNotice('error', response.data.message || 'Failed to toggle cron job');
+                    $button.prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                showNotice('error', 'AJAX Error: ' + error);
+                $button.prop('disabled', false);
+            }
+        });
+    });
+
+    // Refresh cron status
+    $(document).on('click', '.aiacg-refresh-cron-status', function() {
+        var $button = $(this);
+        var $card = $('#aiacg-cron-status-card');
+
+        $button.prop('disabled', true).find('.dashicons').addClass('spin');
+
+        $.ajax({
+            url: aiacgAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_get_cron_status',
+                nonce: aiacgAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotice('success', 'Status refreshed');
+                    // Reload page to show updated status
+                    setTimeout(function() {
+                        location.reload();
+                    }, 500);
+                } else {
+                    showNotice('error', response.data.message || 'Failed to refresh status');
+                }
+            },
+            error: function(xhr, status, error) {
+                showNotice('error', 'AJAX Error: ' + error);
+            },
+            complete: function() {
+                $button.prop('disabled', false).find('.dashicons').removeClass('spin');
+            }
+        });
+    });
+
+    // Manually trigger cron job
+    $(document).on('click', '.aiacg-trigger-cron', function() {
+        var $button = $(this);
+
+        if (!confirm('This will immediately start generating posts. Continue?')) {
+            return;
+        }
+
+        $button.prop('disabled', true);
+        var originalText = $button.html();
+        $button.html('<span class="dashicons dashicons-update spin"></span> Generating...');
+
+        $.ajax({
+            url: aiacgAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_trigger_cron_manual',
+                nonce: aiacgAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotice('success', response.data.message);
+                    // Wait a bit then refresh to see new posts
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showNotice('error', response.data.message || 'Failed to trigger generation');
+                    $button.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr, status, error) {
+                showNotice('error', 'AJAX Error: ' + error);
+                $button.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // Add spin animation for loading states
+    $('<style>')
+        .text('.spin { animation: spin 1s linear infinite; } @keyframes spin { 100% { transform: rotate(360deg); } }')
+        .appendTo('head');
+
+    // ========================================================================
+    // API Health Monitoring (v1.1.1)
+    // ========================================================================
+
+    // Refresh API health
+    $(document).on('click', '.aiacg-refresh-api-health', function() {
+        var $button = $(this);
+
+        $button.prop('disabled', true).find('.dashicons').addClass('spin');
+
+        $.ajax({
+            url: aiacgAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_check_api_health',
+                nonce: aiacgAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotice('success', 'API health check completed');
+                    // Reload page to show updated status
+                    setTimeout(function() {
+                        location.reload();
+                    }, 500);
+                } else {
+                    showNotice('error', response.data.message || 'Failed to check API health');
+                }
+            },
+            error: function(xhr, status, error) {
+                showNotice('error', 'AJAX Error: ' + error);
+            },
+            complete: function() {
+                $button.prop('disabled', false).find('.dashicons').removeClass('spin');
+            }
+        });
+    });
+
 })(jQuery);
