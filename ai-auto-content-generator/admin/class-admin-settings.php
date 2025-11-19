@@ -38,6 +38,15 @@ class AIACG_Admin_Settings {
         add_action('wp_ajax_aiacg_batch_update_taxonomy', array($this, 'ajax_batch_update_taxonomy'));
         add_action('wp_ajax_aiacg_batch_update_status', array($this, 'ajax_batch_update_status'));
         add_action('wp_ajax_aiacg_batch_delete_posts', array($this, 'ajax_batch_delete_posts'));
+
+        // v1.2.0 AJAX handlers
+        add_action('wp_ajax_aiacg_save_template', array($this, 'ajax_save_template'));
+        add_action('wp_ajax_aiacg_delete_template', array($this, 'ajax_delete_template'));
+        add_action('wp_ajax_aiacg_duplicate_template', array($this, 'ajax_duplicate_template'));
+        add_action('wp_ajax_aiacg_get_taxonomy_suggestions', array($this, 'ajax_get_taxonomy_suggestions'));
+        add_action('wp_ajax_aiacg_apply_taxonomy_suggestions', array($this, 'ajax_apply_taxonomy_suggestions'));
+        add_action('wp_ajax_aiacg_import_settings', array($this, 'ajax_import_settings'));
+
         add_filter('plugin_action_links_' . AIACG_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
     }
 
@@ -1470,6 +1479,231 @@ class AIACG_Admin_Settings {
             ),
             'deleted_posts' => $deleted_posts,
             'deleted_records' => $deleted_records,
+        ));
+    }
+
+    /**
+     * AJAX: Save content template
+     * @since 1.2.0
+     */
+    public function ajax_save_template() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $template_id = isset($_POST['template_id']) ? sanitize_text_field($_POST['template_id']) : '';
+        $template_data = isset($_POST['template_data']) ? $_POST['template_data'] : array();
+
+        $result = AIACG_Content_Template_Manager::save_template($template_id, $template_data);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
+        }
+
+        wp_send_json_success(array(
+            'message' => __('Template saved successfully', 'ai-auto-content-generator'),
+            'template_id' => $result,
+        ));
+    }
+
+    /**
+     * AJAX: Delete content template
+     * @since 1.2.0
+     */
+    public function ajax_delete_template() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $template_id = isset($_POST['template_id']) ? sanitize_text_field($_POST['template_id']) : '';
+
+        $result = AIACG_Content_Template_Manager::delete_template($template_id);
+
+        if (!$result) {
+            wp_send_json_error(array('message' => __('Failed to delete template', 'ai-auto-content-generator')));
+        }
+
+        wp_send_json_success(array('message' => __('Template deleted successfully', 'ai-auto-content-generator')));
+    }
+
+    /**
+     * AJAX: Duplicate content template
+     * @since 1.2.0
+     */
+    public function ajax_duplicate_template() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $template_id = isset($_POST['template_id']) ? sanitize_text_field($_POST['template_id']) : '';
+
+        $result = AIACG_Content_Template_Manager::duplicate_template($template_id);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
+        }
+
+        wp_send_json_success(array(
+            'message' => __('Template duplicated successfully', 'ai-auto-content-generator'),
+            'template_id' => $result,
+        ));
+    }
+
+    /**
+     * AJAX: Get AI taxonomy suggestions
+     * @since 1.2.0
+     */
+    public function ajax_get_taxonomy_suggestions() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+
+        if ($post_id > 0) {
+            $post = get_post($post_id);
+            $title = $post->post_title;
+            $content = $post->post_content;
+        } else {
+            $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+            $content = isset($_POST['content']) ? wp_kses_post($_POST['content']) : '';
+        }
+
+        $options = array(
+            'max_categories' => intval(get_option('aiacg_max_suggested_categories', 2)),
+            'max_tags' => intval(get_option('aiacg_max_suggested_tags', 5)),
+            'use_existing_only' => isset($_POST['use_existing_only']) ? (bool) $_POST['use_existing_only'] : false,
+            'api' => get_option('aiacg_taxonomy_api_preference', 'auto'),
+        );
+
+        $suggestions = AIACG_AI_Taxonomy_Suggester::get_suggestions($title, $content, $options);
+
+        if (is_wp_error($suggestions)) {
+            wp_send_json_error(array('message' => $suggestions->get_error_message()));
+        }
+
+        wp_send_json_success(array(
+            'suggestions' => $suggestions,
+            'message' => __('Suggestions generated successfully', 'ai-auto-content-generator'),
+        ));
+    }
+
+    /**
+     * AJAX: Apply taxonomy suggestions
+     * @since 1.2.0
+     */
+    public function ajax_apply_taxonomy_suggestions() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        $suggestions = isset($_POST['suggestions']) ? $_POST['suggestions'] : array();
+        $create_new = isset($_POST['create_new']) ? (bool) $_POST['create_new'] : true;
+
+        if ($post_id === 0) {
+            wp_send_json_error(array('message' => __('Invalid post ID', 'ai-auto-content-generator')));
+        }
+
+        $result = AIACG_AI_Taxonomy_Suggester::apply_suggestions($post_id, $suggestions, $create_new);
+
+        if (!$result) {
+            wp_send_json_error(array('message' => __('Failed to apply suggestions', 'ai-auto-content-generator')));
+        }
+
+        wp_send_json_success(array('message' => __('Suggestions applied successfully', 'ai-auto-content-generator')));
+    }
+
+    /**
+     * AJAX: Export settings
+     * @since 1.2.0
+     */
+    public function ajax_export_settings() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $include_api_keys = isset($_POST['include_api_keys']) ? (bool) $_POST['include_api_keys'] : false;
+
+        try {
+            $file_path = AIACG_Settings_Import_Export::export_to_file($include_api_keys);
+            $filename = basename($file_path);
+
+            wp_send_json_success(array(
+                'message' => __('Settings exported successfully', 'ai-auto-content-generator'),
+                'filename' => $filename,
+                'download_url' => admin_url('admin-ajax.php?action=aiacg_download_export&file=' . urlencode($filename) . '&nonce=' . wp_create_nonce('aiacg_download_export')),
+            ));
+        } catch (Exception $e) {
+            wp_send_json_error(array('message' => $e->getMessage()));
+        }
+    }
+
+    /**
+     * AJAX: Import settings
+     * @since 1.2.0
+     */
+    public function ajax_import_settings() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        if (!isset($_FILES['import_file'])) {
+            wp_send_json_error(array('message' => __('No file uploaded', 'ai-auto-content-generator')));
+        }
+
+        $file = $_FILES['import_file'];
+
+        // Validate file type
+        $allowed_types = array('application/json', 'text/plain');
+        $file_type = wp_check_filetype($file['name']);
+
+        if ($file_type['ext'] !== 'json') {
+            wp_send_json_error(array('message' => __('Invalid file type. Please upload a JSON file.', 'ai-auto-content-generator')));
+        }
+
+        // Read file content
+        $json_data = file_get_contents($file['tmp_name']);
+        $data = json_decode($json_data, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error(array('message' => __('Invalid JSON file', 'ai-auto-content-generator')));
+        }
+
+        // Import options
+        $options = array(
+            'overwrite_existing' => isset($_POST['overwrite_existing']) ? (bool) $_POST['overwrite_existing'] : false,
+            'import_templates' => isset($_POST['import_templates']) ? (bool) $_POST['import_templates'] : true,
+            'import_api_keys' => isset($_POST['import_api_keys']) ? (bool) $_POST['import_api_keys'] : false,
+        );
+
+        $result = AIACG_Settings_Import_Export::import_settings($data, $options);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
+        }
+
+        wp_send_json_success(array(
+            'message' => sprintf(
+                __('Imported %d settings and %d templates', 'ai-auto-content-generator'),
+                $result['settings_imported'],
+                $result['templates_imported']
+            ),
+            'result' => $result,
         ));
     }
 }

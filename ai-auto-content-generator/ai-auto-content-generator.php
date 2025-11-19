@@ -3,7 +3,7 @@
  * Plugin Name: AI Auto Content Generator
  * Plugin URI: https://github.com/yourusername/ai-auto-content-generator
  * Description: 基于AI API自动生成和发布文章的WordPress插件，支持Gemini、DeepSeek、OpenAI等多种AI服务
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Your Name
  * Author URI: https://yourwebsite.com
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // 定义插件常量
-define('AIACG_VERSION', '1.1.3');
+define('AIACG_VERSION', '1.2.0');
 define('AIACG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIACG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIACG_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -70,6 +70,12 @@ class AI_Auto_Content_Generator {
         require_once AIACG_PLUGIN_DIR . 'includes/class-cron-manager.php';
         require_once AIACG_PLUGIN_DIR . 'includes/class-api-health-monitor.php';
         require_once AIACG_PLUGIN_DIR . 'includes/class-system-diagnostics.php';
+
+        // v1.2.0 新功能
+        require_once AIACG_PLUGIN_DIR . 'includes/class-content-template-manager.php';
+        require_once AIACG_PLUGIN_DIR . 'includes/class-content-moderator.php';
+        require_once AIACG_PLUGIN_DIR . 'includes/class-ai-taxonomy-suggester.php';
+        require_once AIACG_PLUGIN_DIR . 'includes/class-settings-import-export.php';
 
         // API接口和实现
         require_once AIACG_PLUGIN_DIR . 'includes/api/interface-ai-api.php';
