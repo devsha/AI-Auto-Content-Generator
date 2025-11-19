@@ -913,3 +913,138 @@
         gap: 10px;
     }
 }
+
+/* System Diagnostics Report (v1.1.2) */
+.aiacg-diagnostic-report {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.aiacg-diagnostic-report h2 {
+    margin: 0 0 15px 0;
+    font-size: 22px;
+    color: #333;
+}
+
+.aiacg-diagnostic-report .report-timestamp {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.diagnostic-summary {
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    border-left: 4px solid;
+}
+
+.diagnostic-summary.status-good {
+    background: #d4edda;
+    border-left-color: #46b450;
+    color: #155724;
+}
+
+.diagnostic-summary.status-warning {
+    background: #fff3cd;
+    border-left-color: #ffb900;
+    color: #856404;
+}
+
+.diagnostic-summary.status-critical {
+    background: #f8d7da;
+    border-left-color: #dc3232;
+    color: #721c24;
+}
+
+.diagnostic-summary h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.diagnostic-summary p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.diagnostic-section {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border-left: 4px solid #e0e0e0;
+    background: #f9f9f9;
+}
+
+.diagnostic-section.status-good {
+    border-left-color: #46b450;
+}
+
+.diagnostic-section.status-warning {
+    border-left-color: #ffb900;
+}
+
+.diagnostic-section.status-critical {
+    border-left-color: #dc3232;
+}
+
+.diagnostic-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.diagnostic-section .status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.diagnostic-section.status-good .status-badge {
+    background: #d4edda;
+    color: #155724;
+}
+
+.diagnostic-section.status-warning .status-badge {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.diagnostic-section.status-critical .status-badge {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.diagnostic-section .issues,
+.diagnostic-section .warnings {
+    margin-top: 10px;
+}
+
+.diagnostic-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.diagnostic-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.diagnostic-section li {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.diagnostic-section li.issue {
+    color: #721c24;
+}
+
+.diagnostic-section li.warning {
+    color: #856404;
+}

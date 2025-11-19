@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // 定义插件常量
-define('AIACG_VERSION', '1.1.1');
+define('AIACG_VERSION', '1.1.2');
 define('AIACG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AIACG_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AIACG_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -69,6 +69,7 @@ class AI_Auto_Content_Generator {
         require_once AIACG_PLUGIN_DIR . 'includes/class-content-quality.php';
         require_once AIACG_PLUGIN_DIR . 'includes/class-cron-manager.php';
         require_once AIACG_PLUGIN_DIR . 'includes/class-api-health-monitor.php';
+        require_once AIACG_PLUGIN_DIR . 'includes/class-system-diagnostics.php';
 
         // API接口和实现
         require_once AIACG_PLUGIN_DIR . 'includes/api/interface-ai-api.php';

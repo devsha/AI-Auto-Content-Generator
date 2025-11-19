@@ -613,6 +613,56 @@
         .appendTo('head');
 
     // ========================================================================
+    // System Diagnostics (v1.1.2)
+    // ========================================================================
+
+    // Run system diagnostics
+    $(document).on('click', '.aiacg-run-diagnostics', function() {
+        var $button = $(this);
+        var $result = $('#aiacg-diagnostics-result');
+        var $content = $('#aiacg-diagnostics-content');
+
+        $button.prop('disabled', true);
+        var originalText = $button.html();
+        $button.html('<span class="dashicons dashicons-update spin"></span> Running diagnostics...');
+
+        $result.show();
+        $content.html('<p style="text-align:center;"><span class="dashicons dashicons-update spin"></span> Analyzing system...</p>');
+
+        $.ajax({
+            url: aiacgAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'aiacg_run_diagnostics',
+                nonce: aiacgAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $content.html(response.data.html_report);
+
+                    // Show summary notification
+                    var summary = response.data.summary;
+                    if (summary.overall_status === 'good') {
+                        showNotice('success', 'System health check completed. All systems operational!');
+                    } else if (summary.overall_status === 'warning') {
+                        showNotice('warning', 'System health check completed with ' + summary.total_warnings + ' warnings.');
+                    } else {
+                        showNotice('error', 'System health check found ' + summary.total_issues + ' issues that need attention.');
+                    }
+                } else {
+                    $content.html('<div class="notice notice-error"><p>' + (response.data.message || 'Failed to run diagnostics') + '</p></div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                $content.html('<div class="notice notice-error"><p>AJAX Error: ' + error + '</p></div>');
+            },
+            complete: function() {
+                $button.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+
+    // ========================================================================
     // API Health Monitoring (v1.1.1)
     // ========================================================================
 

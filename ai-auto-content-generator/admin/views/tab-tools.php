@@ -12,6 +12,24 @@ if (!defined('ABSPATH')) {
 ?>
 
 <div class="aiacg-tools-section">
+    <h2><?php _e('System Diagnostics', 'ai-auto-content-generator'); ?></h2>
+
+    <div class="aiacg-tool-box">
+        <h3><?php _e('Run System Health Check', 'ai-auto-content-generator'); ?></h3>
+        <p><?php _e('Perform a comprehensive diagnostic check of your WordPress environment, PHP configuration, database, plugin settings, and API connections.', 'ai-auto-content-generator'); ?></p>
+
+        <button type="button" class="button button-primary aiacg-run-diagnostics">
+            <span class="dashicons dashicons-admin-tools" style="margin-top: 3px;"></span>
+            <?php _e('Run Diagnostics', 'ai-auto-content-generator'); ?>
+        </button>
+
+        <div id="aiacg-diagnostics-result" style="margin-top: 20px; display: none;">
+            <div id="aiacg-diagnostics-content"></div>
+        </div>
+    </div>
+
+    <hr style="margin: 30px 0;">
+
     <h2><?php _e('Import / Export Settings', 'ai-auto-content-generator'); ?></h2>
 
     <div class="aiacg-tool-box">

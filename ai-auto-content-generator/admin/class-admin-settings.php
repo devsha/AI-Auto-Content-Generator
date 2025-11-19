@@ -34,6 +34,7 @@ class AIACG_Admin_Settings {
         add_action('wp_ajax_aiacg_get_cron_status', array($this, 'ajax_get_cron_status'));
         add_action('wp_ajax_aiacg_trigger_cron_manual', array($this, 'ajax_trigger_cron_manual'));
         add_action('wp_ajax_aiacg_check_api_health', array($this, 'ajax_check_api_health'));
+        add_action('wp_ajax_aiacg_run_diagnostics', array($this, 'ajax_run_diagnostics'));
         add_filter('plugin_action_links_' . AIACG_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
     }
 
@@ -115,6 +116,20 @@ class AIACG_Admin_Settings {
         register_setting('aiacg_other_settings', 'aiacg_enable_logging');
         register_setting('aiacg_other_settings', 'aiacg_email_on_error');
         register_setting('aiacg_other_settings', 'aiacg_history_retention_days');
+
+        // 去重设置
+        register_setting('aiacg_dedup_settings', 'aiacg_similarity_threshold');
+        register_setting('aiacg_dedup_settings', 'aiacg_enable_title_check');
+        register_setting('aiacg_dedup_settings', 'aiacg_enable_content_check');
+        register_setting('aiacg_dedup_settings', 'aiacg_dedup_lookback_days');
+
+        // 通知设置
+        register_setting('aiacg_notification_settings', 'aiacg_notification_email');
+        register_setting('aiacg_notification_settings', 'aiacg_notify_on_success');
+        register_setting('aiacg_notification_settings', 'aiacg_notify_on_error');
+        register_setting('aiacg_notification_settings', 'aiacg_notify_on_budget_warning');
+        register_setting('aiacg_notification_settings', 'aiacg_daily_summary_enabled');
+        register_setting('aiacg_notification_settings', 'aiacg_daily_summary_time');
 
         // 预算控制设置
         register_setting('aiacg_budget_settings', 'aiacg_daily_budget_limit');
@@ -511,6 +526,109 @@ class AIACG_Admin_Settings {
                                value="<?php echo esc_attr(get_option('aiacg_budget_warning_threshold', 80)); ?>"
                                min="50" max="95" step="5" style="width: 100px;">
                         <p class="description"><?php _e('Send warning when budget reaches this percentage (default: 80%)', 'ai-auto-content-generator'); ?></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="2"><h2><?php _e('Content Deduplication (Advanced)', 'ai-auto-content-generator'); ?></h2></th>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_similarity_threshold"><?php _e('Similarity Threshold (%)', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <input type="number" id="aiacg_similarity_threshold" name="aiacg_similarity_threshold"
+                               value="<?php echo esc_attr(get_option('aiacg_similarity_threshold', 80)); ?>"
+                               min="50" max="100" step="1" style="width: 100px;">
+                        <p class="description"><?php _e('Content with similarity above this threshold will be rejected (default: 80%). Lower values are more strict.', 'ai-auto-content-generator'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label><?php _e('Deduplication Methods', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="aiacg_enable_title_check" value="1"
+                                   <?php checked(get_option('aiacg_enable_title_check', true)); ?>>
+                            <?php _e('Check title similarity', 'ai-auto-content-generator'); ?>
+                        </label>
+                        <br>
+                        <label>
+                            <input type="checkbox" name="aiacg_enable_content_check" value="1"
+                                   <?php checked(get_option('aiacg_enable_content_check', true)); ?>>
+                            <?php _e('Check content similarity', 'ai-auto-content-generator'); ?>
+                        </label>
+                        <p class="description"><?php _e('Enable checking for duplicate titles and/or content against existing posts.', 'ai-auto-content-generator'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_dedup_lookback_days"><?php _e('Lookback Period (Days)', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <input type="number" id="aiacg_dedup_lookback_days" name="aiacg_dedup_lookback_days"
+                               value="<?php echo esc_attr(get_option('aiacg_dedup_lookback_days', 90)); ?>"
+                               min="7" max="365" step="1" style="width: 100px;">
+                        <p class="description"><?php _e('Only compare against posts from the last N days (default: 90). Reduces processing time for large sites.', 'ai-auto-content-generator'); ?></p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="2"><h2><?php _e('Notifications & Alerts', 'ai-auto-content-generator'); ?></h2></th>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_notification_email"><?php _e('Notification Email', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <input type="email" id="aiacg_notification_email" name="aiacg_notification_email"
+                               value="<?php echo esc_attr(get_option('aiacg_notification_email', get_option('admin_email'))); ?>"
+                               class="regular-text">
+                        <p class="description"><?php _e('Email address for notifications (default: admin email)', 'ai-auto-content-generator'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label><?php _e('Notification Events', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="aiacg_notify_on_success" value="1"
+                                   <?php checked(get_option('aiacg_notify_on_success', false)); ?>>
+                            <?php _e('Notify on successful content generation', 'ai-auto-content-generator'); ?>
+                        </label>
+                        <br>
+                        <label>
+                            <input type="checkbox" name="aiacg_notify_on_error" value="1"
+                                   <?php checked(get_option('aiacg_notify_on_error', true)); ?>>
+                            <?php _e('Notify on generation errors', 'ai-auto-content-generator'); ?>
+                        </label>
+                        <br>
+                        <label>
+                            <input type="checkbox" name="aiacg_notify_on_budget_warning" value="1"
+                                   <?php checked(get_option('aiacg_notify_on_budget_warning', true)); ?>>
+                            <?php _e('Notify on budget threshold reached', 'ai-auto-content-generator'); ?>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="aiacg_daily_summary_enabled"><?php _e('Daily Summary Report', 'ai-auto-content-generator'); ?></label>
+                    </th>
+                    <td>
+                        <label>
+                            <input type="checkbox" id="aiacg_daily_summary_enabled" name="aiacg_daily_summary_enabled" value="1"
+                                   <?php checked(get_option('aiacg_daily_summary_enabled', false)); ?>>
+                            <?php _e('Send daily summary email', 'ai-auto-content-generator'); ?>
+                        </label>
+                        <br><br>
+                        <label for="aiacg_daily_summary_time">
+                            <?php _e('Send at:', 'ai-auto-content-generator'); ?>
+                            <input type="time" id="aiacg_daily_summary_time" name="aiacg_daily_summary_time"
+                                   value="<?php echo esc_attr(get_option('aiacg_daily_summary_time', '18:00')); ?>">
+                        </label>
+                        <p class="description"><?php _e('Receive a daily summary of all generation activity, costs, and quality scores.', 'ai-auto-content-generator'); ?></p>
                     </td>
                 </tr>
             </table>
@@ -1087,6 +1205,27 @@ class AIACG_Admin_Settings {
         wp_send_json_success(array(
             'summary' => $summary,
             'avg_response_time' => $avg_response_time,
+        ));
+    }
+
+    /**
+     * AJAX: 运行系统诊断
+     */
+    public function ajax_run_diagnostics() {
+        check_ajax_referer('aiacg_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied', 'ai-auto-content-generator')));
+        }
+
+        $full_diagnostic = AIACG_System_Diagnostics::run_full_diagnostic();
+        $summary = AIACG_System_Diagnostics::get_diagnostic_summary();
+        $html_report = AIACG_System_Diagnostics::generate_html_report();
+
+        wp_send_json_success(array(
+            'diagnostic' => $full_diagnostic,
+            'summary' => $summary,
+            'html_report' => $html_report,
         ));
     }
 }
