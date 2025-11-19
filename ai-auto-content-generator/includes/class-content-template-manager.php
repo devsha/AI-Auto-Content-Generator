@@ -64,6 +64,27 @@ class AIACG_Content_Template_Manager {
             $template_id = sanitize_title($template_data['name']) . '_' . time();
         }
 
+        // Validate word counts
+        $word_count_min = intval($template_data['word_count_min'] ?? 500);
+        $word_count_max = intval($template_data['word_count_max'] ?? 1500);
+
+        if ($word_count_min < 100) {
+            $word_count_min = 100;
+        }
+        if ($word_count_max < $word_count_min) {
+            $word_count_max = $word_count_min + 500;
+        }
+        if ($word_count_max > 10000) {
+            $word_count_max = 10000;
+        }
+
+        // Validate post status
+        $post_status = sanitize_text_field($template_data['post_status'] ?? 'draft');
+        $valid_statuses = array('draft', 'publish', 'private', 'pending');
+        if (!in_array($post_status, $valid_statuses)) {
+            $post_status = 'draft';
+        }
+
         // Sanitize and prepare template data
         $template = array(
             'name' => sanitize_text_field($template_data['name']),
@@ -71,15 +92,15 @@ class AIACG_Content_Template_Manager {
             'prompt_template' => sanitize_textarea_field($template_data['prompt_template'] ?? ''),
             'writing_style' => sanitize_text_field($template_data['writing_style'] ?? 'professional'),
             'tone' => sanitize_text_field($template_data['tone'] ?? 'neutral'),
-            'word_count_min' => intval($template_data['word_count_min'] ?? 500),
-            'word_count_max' => intval($template_data['word_count_max'] ?? 1500),
+            'word_count_min' => $word_count_min,
+            'word_count_max' => $word_count_max,
             'include_sections' => isset($template_data['include_sections']) ? (bool) $template_data['include_sections'] : true,
             'include_conclusion' => isset($template_data['include_conclusion']) ? (bool) $template_data['include_conclusion'] : true,
             'include_faq' => isset($template_data['include_faq']) ? (bool) $template_data['include_faq'] : false,
             'seo_focus' => isset($template_data['seo_focus']) ? (bool) $template_data['seo_focus'] : true,
             'default_category' => intval($template_data['default_category'] ?? 0),
             'default_tags' => sanitize_text_field($template_data['default_tags'] ?? ''),
-            'post_status' => sanitize_text_field($template_data['post_status'] ?? 'draft'),
+            'post_status' => $post_status,
             'created_at' => $templates[$template_id]['created_at'] ?? current_time('mysql'),
             'updated_at' => current_time('mysql'),
         );

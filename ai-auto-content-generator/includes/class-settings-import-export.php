@@ -167,22 +167,45 @@ class AIACG_Settings_Import_Export {
             $filename = 'aiacg-settings-' . date('Y-m-d-His') . '.json';
         }
 
+        // Sanitize filename
+        $filename = sanitize_file_name($filename);
+        if (!preg_match('/\.json$/i', $filename)) {
+            $filename .= '.json';
+        }
+
         $upload_dir = wp_upload_dir();
+
+        // Check for upload directory errors
+        if ($upload_dir['error']) {
+            throw new Exception($upload_dir['error']);
+        }
+
         $export_dir = $upload_dir['basedir'] . '/aiacg-exports';
 
         // Create directory if it doesn't exist
         if (!file_exists($export_dir)) {
-            wp_mkdir_p($export_dir);
+            if (!wp_mkdir_p($export_dir)) {
+                throw new Exception(__('Failed to create export directory', 'ai-auto-content-generator'));
+            }
 
             // Add .htaccess to protect exports
             $htaccess = $export_dir . '/.htaccess';
-            file_put_contents($htaccess, 'deny from all');
+            $htaccess_content = 'deny from all';
+            if (file_put_contents($htaccess, $htaccess_content) === false) {
+                error_log('AIACG: Failed to create .htaccess for export directory');
+            }
         }
 
         $file_path = $export_dir . '/' . $filename;
         $json_data = wp_json_encode($settings, JSON_PRETTY_PRINT);
 
-        file_put_contents($file_path, $json_data);
+        if ($json_data === false) {
+            throw new Exception(__('Failed to encode settings as JSON', 'ai-auto-content-generator'));
+        }
+
+        if (file_put_contents($file_path, $json_data) === false) {
+            throw new Exception(__('Failed to write export file', 'ai-auto-content-generator'));
+        }
 
         return $file_path;
     }

@@ -335,22 +335,35 @@ class AIACG_AI_Taxonomy_Suggester {
      * @return bool Success
      */
     public static function apply_suggestions($post_id, $suggestions, $create_new = true) {
+        // Validate post exists
+        $post = get_post($post_id);
+        if (!$post) {
+            return false;
+        }
+
+        // Validate suggestions structure
+        if (!is_array($suggestions)) {
+            return false;
+        }
+
         $category_ids = array();
         $tag_names = array();
 
         // Process categories
-        foreach ($suggestions['categories'] as $cat_name) {
-            $cat = get_category_by_slug(sanitize_title($cat_name));
-            if (!$cat) {
-                $cat = get_term_by('name', $cat_name, 'category');
-            }
-            if ($cat) {
-                $category_ids[] = $cat->term_id;
+        if (!empty($suggestions['categories']) && is_array($suggestions['categories'])) {
+            foreach ($suggestions['categories'] as $cat_name) {
+                $cat = get_category_by_slug(sanitize_title($cat_name));
+                if (!$cat) {
+                    $cat = get_term_by('name', $cat_name, 'category');
+                }
+                if ($cat) {
+                    $category_ids[] = $cat->term_id;
+                }
             }
         }
 
         // Create new categories if allowed
-        if ($create_new && !empty($suggestions['new_categories'])) {
+        if ($create_new && !empty($suggestions['new_categories']) && is_array($suggestions['new_categories'])) {
             foreach ($suggestions['new_categories'] as $cat_name) {
                 $result = wp_insert_term($cat_name, 'category');
                 if (!is_wp_error($result)) {
@@ -360,7 +373,9 @@ class AIACG_AI_Taxonomy_Suggester {
         }
 
         // Process tags
-        $tag_names = array_merge($suggestions['tags'], $create_new ? $suggestions['new_tags'] : array());
+        $existing_tags = !empty($suggestions['tags']) && is_array($suggestions['tags']) ? $suggestions['tags'] : array();
+        $new_tags = ($create_new && !empty($suggestions['new_tags']) && is_array($suggestions['new_tags'])) ? $suggestions['new_tags'] : array();
+        $tag_names = array_merge($existing_tags, $new_tags);
 
         // Apply to post
         if (!empty($category_ids)) {

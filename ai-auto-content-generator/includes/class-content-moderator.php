@@ -45,7 +45,14 @@ class AIACG_Content_Moderator {
      * @return bool Success
      */
     public static function set_moderation_status($post_id, $status, $notes = '', $moderator_id = 0) {
+        // Validate status
         if (!in_array($status, array(self::STATUS_PENDING, self::STATUS_APPROVED, self::STATUS_REJECTED, self::STATUS_NEEDS_REVISION))) {
+            return false;
+        }
+
+        // Validate post exists
+        $post = get_post($post_id);
+        if (!$post) {
             return false;
         }
 
@@ -56,7 +63,7 @@ class AIACG_Content_Moderator {
         $moderation_data = array(
             'status' => $status,
             'notes' => sanitize_textarea_field($notes),
-            'moderator_id' => $moderator_id,
+            'moderator_id' => intval($moderator_id),
             'moderated_at' => current_time('mysql'),
         );
 
@@ -74,11 +81,16 @@ class AIACG_Content_Moderator {
         // Auto-publish if approved and enabled
         if ($status === self::STATUS_APPROVED) {
             $auto_publish = get_option('aiacg_moderation_auto_publish', false);
-            if ($auto_publish) {
-                wp_update_post(array(
+            if ($auto_publish && $post->post_status !== 'publish') {
+                $result = wp_update_post(array(
                     'ID' => $post_id,
                     'post_status' => 'publish',
-                ));
+                ), true);
+
+                // Log error if update failed
+                if (is_wp_error($result)) {
+                    error_log('AIACG: Failed to auto-publish post ' . $post_id . ': ' . $result->get_error_message());
+                }
             }
         }
 
